@@ -1,6 +1,6 @@
 # FOODBRIDGE V4 (React + Vite + Express + MongoDB)
 
-T# LeftoverLux / FoodBridge
+T#  FoodBridge
 
 Surplus food rescue platform that connects:
 - `Hotels` with unsold food
