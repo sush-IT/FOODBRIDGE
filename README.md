@@ -199,3 +199,10 @@ Payments:
 - Old static HTML files are still present for reference.
 - New portal pages are componentized in React and use separated CSS files.
 - Backend auto-seeds sample listings/donations when collections are empty.
+
+## Drive Link
+https://drive.google.com/drive/folders/1ROzox2AbRdATqez2Pg6yFGuAf7PUjPNO
+drive content:
+1.Prototype 
+2.PPT
+3.Pitch Video
