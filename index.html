@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FOODBRIDGE — Premium Hotel Food at Incredible Prices</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="demoBanner" class="demo-bar">⚡ Demo Mode — data stays in this browser. Add Firebase config to js/firebase.js for real backend. <a href="#" onclick="this.parentElement.style.display='none'" style="color:var(--am-lt);margin-left:8px;">Dismiss ✕</a></div>
+<nav class="nav">
+  <div class="nav-logo"><b>Leftover</b>Lux</div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="openAuth('customer')">Customer Login</button>
+    <button class="nav-btn" onclick="openAuth('hotel')">Hotel Login</button>
+    <button class="btn btn-ngo btn-sm" onclick="window.location.href='ngo.html'">🤝 NGO Portal</button>
+  </div>
+</nav>
+<section class="hero">
+  <div class="hero-eyebrow">🌱 Fighting food waste, one meal at a time</div>
+  <h1 class="hero-title">Premium Hotel Food<br>at <em>Incredible</em> Prices</h1>
+  <p class="hero-sub">Rescue surplus meals from 5-star hotels before they're wasted. Up to 70% off. Fresh. Sustainable. Delicious.</p>
+  <div class="hero-btns">
+    <button class="btn btn-amber btn-xl" onclick="openAuth('customer')">🍽️ Browse Deals</button>
+    <button class="btn btn-ghost btn-xl" onclick="document.getElementById('rolesSection').scrollIntoView({behavior:'smooth'})">Learn More ↓</button>
+  </div>
+  <div class="hero-stats">
+    <div class="h-stat"><div class="h-stat-n">340+</div><div class="h-stat-l">Partner Hotels</div></div>
+    <div class="h-stat"><div class="h-stat-n">12k+</div><div class="h-stat-l">Meals Saved</div></div>
+    <div class="h-stat"><div class="h-stat-n">4,200+</div><div class="h-stat-l">Meals Donated</div></div>
+    <div class="h-stat"><div class="h-stat-n">65%</div><div class="h-stat-l">Avg Discount</div></div>
+  </div>
+</section>
+<section class="role-section" id="rolesSection">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:36px">
+      <h2 style="font-size:2rem;margin-bottom:8px">Choose Your Portal</h2>
+      <p style="color:var(--gy)">One platform, three ways to make an impact</p>
+    </div>
+    <div class="role-grid">
+      <div class="role-card" onclick="openAuth('customer')">
+        <div class="rc-icon">🧑‍🍽️</div><div class="rc-title">Customer</div>
+        <div class="rc-desc">Browse surplus meals from top hotels at up to 70% off. Choose delivery or pickup. Pay how you like.</div>
+        <button class="btn btn-amber btn-full">Browse Deals →</button>
+      </div>
+      <div class="role-card" onclick="openAuth('hotel')">
+        <div class="rc-icon">🏨</div><div class="rc-title">Hotel Admin</div>
+        <div class="rc-desc">List surplus food with real dish photos, manage live orders & donate excess meals to verified NGOs.</div>
+        <button class="btn btn-outline btn-full">Hotel Dashboard →</button>
+      </div>
+      <div class="role-card rc-ngo" onclick="window.location.href='ngo.html'">
+        <div class="rc-icon">🤝</div><div class="rc-title">NGO / Shelter</div>
+        <div class="rc-desc">Dedicated portal for verified NGOs. Browse donations, claim free pickups & track your impact.</div>
+        <button class="btn btn-ngo btn-full">NGO Portal →</button>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="modal-bg" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+    <h2 id="authTitle">Welcome Back</h2>
+    <p class="modal-sub" id="authSub">Sign in to continue</p>
+    <div class="role-pick" style="margin-bottom:16px">
+      <div class="rp on" id="rp-customer" onclick="setRole('customer')"><span class="rp-icon">🧑‍🍽️</span><span class="rp-label">Customer</span></div>
+      <div class="rp" id="rp-hotel" onclick="setRole('hotel')"><span class="rp-icon">🏨</span><span class="rp-label">Hotel</span></div>
+    </div>
+    <div class="modal-tabs">
+      <button class="mtab on" id="tab-in" onclick="switchTab('in')">Sign In</button>
+      <button class="mtab" id="tab-up" onclick="switchTab('up')">Create Account</button>
+    </div>
+    <div id="formIn" class="form-stack">
+      <div class="fgroup"><label>Email</label><input type="email" id="liEmail" placeholder="you@example.com"></div>
+      <div class="fgroup"><label>Password</label><input type="password" id="liPass" placeholder="••••••••"></div>
+      <button class="btn btn-amber btn-full btn-lg" id="liBtn" onclick="doLogin()">Sign In</button>
+      <p class="modal-footer-txt">New here? <a onclick="switchTab('up')" style="color:var(--am);cursor:pointer;font-weight:600">Create account →</a></p>
+    </div>
+    <div id="formUp" class="form-stack hidden">
+      <div class="fgroup"><label id="nameLabel">Your Name</label><input type="text" id="suName" placeholder="e.g. Rahul Sharma"></div>
+      <div class="fgroup"><label>City</label>
+        <select id="suCity"><option value="">Select city</option><option>Mumbai</option><option>Delhi</option><option>Bangalore</option><option>Hyderabad</option><option>Chennai</option><option>Pune</option><option>Kolkata</option></select>
+      </div>
+      <div class="fgroup"><label>Email</label><input type="email" id="suEmail" placeholder="you@example.com"></div>
+      <div class="fgroup"><label>Password</label><input type="password" id="suPass" placeholder="Min. 6 characters"></div>
+      <button class="btn btn-amber btn-full btn-lg" id="suBtn" onclick="doSignup()">Create Account</button>
+      <p class="modal-footer-txt">Already have one? <a onclick="switchTab('in')" style="color:var(--am);cursor:pointer;font-weight:600">Sign in →</a></p>
+    </div>
+  </div>
+</div>
+<div id="toastBox"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script>
+if (!DEMO) document.getElementById('demoBanner').style.display='none';
+const sess = getSession(); if (sess) goTo(sess.role);
+let _role='customer';
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-bg')){e.target.classList.remove('open');document.body.style.overflow='';}});
+function openAuth(r){setRole(r);openModal('authModal');}
+function setRole(r){
+  _role=r;
+  ['customer','hotel'].forEach(x=>document.getElementById('rp-'+x).classList.toggle('on',x===r));
+  document.getElementById('nameLabel').textContent=r==='hotel'?'Hotel Name':'Your Name';
+  document.getElementById('suName').placeholder=r==='hotel'?'e.g. The Grand Oberoi':'e.g. Rahul Sharma';
+}
+function switchTab(t){
+  ['in','up'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('on',x===t);
+    document.getElementById('form'+(x==='in'?'In':'Up')).classList.toggle('hidden',x!==t);
+  });
+  document.getElementById('authTitle').textContent=t==='in'?'Welcome Back':'Create Account';
+  document.getElementById('authSub').textContent=t==='in'?'Sign in to continue':'Join FOODBRIDGE today';
+}
+async function doLogin(){
+  const email=document.getElementById('liEmail').value.trim(),pass=document.getElementById('liPass').value;
+  if(!email||!pass){toast('Please fill all fields','warn');return;}
+  const btn=document.getElementById('liBtn');btn.disabled=true;btn.textContent='Signing in…';
+  try{const u=await FBAuth.signIn(email,pass);goTo(u.role);}
+  catch(e){toast(e.message||'Login failed — try signing up if you are new.','err');btn.disabled=false;btn.textContent='Sign In';}
+}
+async function doSignup(){
+  const name=document.getElementById('suName').value.trim(),city=document.getElementById('suCity').value,
+        email=document.getElementById('suEmail').value.trim(),pass=document.getElementById('suPass').value;
+  if(!name||!city||!email||!pass){toast('Please fill all fields','warn');return;}
+  if(pass.length<6){toast('Password must be at least 6 characters','warn');return;}
+  const btn=document.getElementById('suBtn');btn.disabled=true;btn.textContent='Creating…';
+  try{
+    const profile={name,city,role:_role,...(_role==='hotel'?{hotelId:'h-'+Date.now(),hotelName:name}:{})};
+    const u=await FBAuth.signUp(email,pass,profile);goTo(u.role);
+  }catch(e){toast(e.message||'Signup failed','err');btn.disabled=false;btn.textContent='Create Account';}
+}
+function goTo(role){const m={customer:'customer.html',hotel:'hotel.html',ngo:'ngo.html'};window.location.href=m[role]||'customer.html';}
+function toast(msg,type='ok'){
+  const b=document.getElementById('toastBox'),t=document.createElement('div');
+  const ic={ok:'✅',err:'❌',info:'ℹ️',warn:'⚠️'};
+  t.className=`toast toast-${type}`;t.innerHTML=`<span>${ic[type]||'ℹ️'}</span> ${msg}`;
+  b.appendChild(t);requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3600);
+}
+</script>
+</body>
+</html>

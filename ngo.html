@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FOODBRIDGE — NGO Portal</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>"/>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+/* ── NGO Portal specific ─────────────────────────────────── */
+:root {
+  --ngo-dark:   #061228;
+  --ngo-mid:    #0f2a5a;
+  --ngo-card:   #0d1f45;
+  --ngo-border: rgba(96,165,250,.18);
+  --ngo-green:  #1e5c3a;
+  --ngo-gold:   #e8c440;
+}
+
+body { background: #040e24; color: #e2e8f4; }
+
+/* Nav */
+.nav { background: rgba(6,18,40,.95); border-bottom: 1px solid var(--ngo-border); backdrop-filter: blur(12px); }
+.nav-logo b { color: #e2e8f4; }
+.nav-logo span { color: var(--ngo-ac); }
+
+/* Hero */
+.ngo-hero {
+  background: linear-gradient(145deg, var(--ngo-dark) 0%, #0a1e3d 60%, #071428 100%);
+  padding: 56px 0 0; text-align: center; position: relative; overflow: hidden;
+}
+.ngo-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 40%, rgba(96,165,250,.12) 0%, transparent 55%),
+              radial-gradient(ellipse at 20% 80%, rgba(232,196,64,.07) 0%, transparent 50%);
+}
+.ngo-hero::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ngo-border), transparent);
+}
+.ngo-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; background: rgba(96,165,250,.1);
+  border: 1px solid rgba(96,165,250,.25); color: var(--ngo-ac); font-size: .72rem;
+  font-weight: 700; padding: 5px 14px; border-radius: 50px; letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 20px; position: relative;
+}
+.ngo-hero h1 { font-family: 'Playfair Display',serif; font-size: clamp(1.9rem,5vw,3.4rem); font-weight: 900; color: #fff; position: relative; margin-bottom: 14px; line-height: 1.1; }
+.ngo-hero h1 em { color: var(--ngo-ac); font-style: normal; }
+.ngo-hero p { color: #7aace8; font-size: .97rem; max-width: 480px; margin: 0 auto 28px; position: relative; line-height: 1.7; }
+.ngo-hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; margin-bottom: 40px; }
+
+/* Stat bar */
+.ngo-statbar {
+  background: rgba(0,0,0,.4); border-top: 1px solid var(--ngo-border);
+  display: flex; position: relative;
+}
+.ngo-stat { flex: 1; text-align: center; padding: 20px 10px; border-right: 1px solid var(--ngo-border); }
+.ngo-stat:last-child { border: none; }
+.ngo-stat-n { font-family: 'Playfair Display',serif; font-size: 1.7rem; font-weight: 700; color: var(--ngo-ac); }
+.ngo-stat-l { font-size: .65rem; color: #4a7ab0; text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+
+/* Dashboard layout */
+.dash-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 56px); }
+.ngo-sidebar {
+  background: var(--ngo-dark); border-right: 1px solid var(--ngo-border);
+  padding: 20px 12px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
+}
+.ngo-sb-profile {
+  background: rgba(255,255,255,.05); border: 1px solid var(--ngo-border);
+  border-radius: 14px; padding: 14px; margin-bottom: 18px;
+}
+.ngo-sb-av { width: 38px; height: 38px; background: linear-gradient(135deg,var(--ngo-ac),#3b82f6); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 8px; }
+.ngo-sb-name { font-size: .84rem; font-weight: 700; color: #e2e8f4; line-height: 1.2; margin-bottom: 2px; }
+.ngo-sb-city { font-size: .7rem; color: #4a7ab0; }
+.ngo-sb-verified { display: inline-flex; align-items: center; gap: 4px; font-size: .62rem; font-weight: 700; background: rgba(30,92,58,.4); color: #52b788; padding: 2px 8px; border-radius: 50px; margin-top: 5px; }
+
+.sb-section { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.8px; color: #2a4a7a; padding: 0 10px; margin: 14px 0 6px; }
+.sb-section:first-of-type { margin-top: 0; }
+.sb-link { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 10px; color: #4a7ab0; font-size: .84rem; font-weight: 500; cursor: pointer; border: none; background: none; width: 100%; text-align: left; transition: all .18s; margin-bottom: 2px; }
+.sb-link:hover { background: rgba(96,165,250,.08); color: #93c5fd; }
+.sb-link.on { background: rgba(96,165,250,.15); color: var(--ngo-ac); }
+.sb-link .ic { width: 18px; text-align: center; font-size: .9rem; }
+.sb-div { height: 1px; background: var(--ngo-border); margin: 10px 8px; }
+.sb-badge { margin-left: auto; background: #2563eb; color: #fff; font-size: .58rem; font-weight: 700; padding: 2px 6px; border-radius: 50px; }
+
+/* Main panels */
+.ngo-main { padding: 26px 30px; overflow-y: auto; min-height: calc(100vh - 56px); }
+.panel { display: none; animation: fadeUp .3s ease; }
+.panel.on { display: block; }
+.ptitle { font-family: 'Playfair Display',serif; font-size: 1.55rem; font-weight: 700; color: #e2e8f4; margin-bottom: 3px; }
+.ptitle em { color: var(--ngo-ac); font-style: normal; }
+.psub { color: #4a7ab0; font-size: .86rem; margin-bottom: 22px; }
+
+/* Info card */
+.info-card {
+  background: rgba(96,165,250,.08); border: 1px solid var(--ngo-border);
+  border-radius: 14px; padding: 16px 20px; margin-bottom: 20px;
+  font-size: .84rem; color: #7aace8; line-height: 1.7;
+}
+.info-card strong { color: var(--ngo-ac); }
+
+/* Donation cards for NGO view */
+.don-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 18px; }
+
+.don-card {
+  background: var(--ngo-card); border: 1px solid var(--ngo-border);
+  border-radius: 18px; overflow: hidden; transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+.don-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,20,.5); border-color: rgba(96,165,250,.35); }
+.don-card.don-claimed { opacity: .6; border-color: rgba(255,255,255,.06); }
+
+.don-img-wrap { position: relative; height: 175px; overflow: hidden; }
+.don-img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+.don-card:hover .don-img { transform: scale(1.05); }
+.don-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(6,18,40,.8) 0%, transparent 50%); }
+.don-avail-badge { position: absolute; top: 10px; left: 10px; font-size: .65rem; font-weight: 700; padding: 4px 10px; border-radius: 50px; }
+.dab-avail { background: #16a34a; color: #fff; }
+.dab-claimed { background: #6b7280; color: #fff; }
+.don-servings { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); color: #fff; font-size: .68rem; font-weight: 700; padding: 4px 10px; border-radius: 50px; }
+
+.don-body { padding: 14px 16px 16px; }
+.don-hotel { font-size: .66rem; font-weight: 700; color: var(--ngo-ac); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 2px; }
+.don-name { font-family: 'Playfair Display',serif; font-size: 1.05rem; font-weight: 700; color: #e2e8f4; margin-bottom: 6px; }
+.don-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: .74rem; color: #4a7ab0; margin-bottom: 8px; }
+.don-notes { font-size: .78rem; color: #4a7ab0; margin-bottom: 12px; line-height: 1.55; }
+.don-addr { font-size: .74rem; color: #4a7ab0; margin-bottom: 14px; }
+.don-addr strong { color: #7aace8; }
+.don-footer { display: flex; gap: 8px; }
+.don-claimed-info { font-size: .74rem; color: #52b788; background: rgba(30,92,58,.25); border-radius: 8px; padding: 8px 12px; width: 100%; }
+
+/* Claim history cards */
+.history-card {
+  background: var(--ngo-card); border: 1px solid var(--ngo-border);
+  border-radius: 14px; padding: 16px 18px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 14px;
+}
+.history-img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.history-info { flex: 1; }
+.history-name { font-weight: 700; color: #e2e8f4; font-size: .9rem; margin-bottom: 2px; }
+.history-meta { font-size: .75rem; color: #4a7ab0; }
+.history-status { font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 50px; }
+.hs-claimed   { background: rgba(96,165,250,.15); color: var(--ngo-ac); }
+.hs-completed { background: rgba(30,92,58,.25); color: #52b788; }
+
+/* NGO KPI bar */
+.ngo-kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+.ngo-kpi { background: var(--ngo-card); border: 1px solid var(--ngo-border); border-radius: 14px; padding: 16px 18px; }
+.ngo-kpi-lbl { font-size: .66rem; font-weight: 700; color: #4a7ab0; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.ngo-kpi-val { font-family: 'Playfair Display',serif; font-size: 1.8rem; font-weight: 700; color: var(--ngo-ac); line-height: 1; }
+.ngo-kpi-sub { font-size: .7rem; color: #4a7ab0; margin-top: 4px; }
+
+/* Profile form */
+.profile-form-wrap { background: var(--ngo-card); border: 1px solid var(--ngo-border); border-radius: 18px; padding: 24px 26px; }
+.profile-form-wrap h3 { color: var(--ngo-ac); font-family: 'Playfair Display',serif; font-size: 1.15rem; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--ngo-border); }
+.pfw .fgroup label { color: #4a7ab0; }
+.pfw .fgroup input, .pfw .fgroup select, .pfw .fgroup textarea { background: rgba(255,255,255,.07); border-color: var(--ngo-border); color: #e2e8f4; }
+.pfw .fgroup input:focus, .pfw .fgroup select:focus, .pfw .fgroup textarea:focus { border-color: var(--ngo-ac); background: rgba(255,255,255,.1); }
+.pfw .fgroup input::placeholder, .pfw .fgroup textarea::placeholder { color: #2a4a7a; }
+.pfw .fgroup select option { background: var(--ngo-dark); color: #e2e8f4; }
+
+/* Claim modal */
+.claim-modal .modal { background: var(--ngo-dark); border: 1px solid var(--ngo-border); }
+.claim-modal .modal h2 { color: #e2e8f4; }
+.claim-modal .modal-sub { color: #4a7ab0; }
+.claim-modal .fgroup label { color: #4a7ab0; }
+.claim-modal .fgroup input { background: rgba(255,255,255,.08); border-color: var(--ngo-border); color: #e2e8f4; }
+.claim-modal .fgroup input:focus { border-color: var(--ngo-ac); }
+.claim-modal .modal-close { color: #4a7ab0; }
+
+/* Filters */
+.filter-bar { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
+.fb { padding: 7px 15px; border-radius: 50px; border: 1.5px solid var(--ngo-border); background: transparent; color: #4a7ab0; font-size: .81rem; font-weight: 500; cursor: pointer; transition: all .18s; }
+.fb:hover { border-color: var(--ngo-ac); color: var(--ngo-ac); }
+.fb.on { background: var(--ngo-ac); border-color: var(--ngo-ac); color: #0c1a3d; }
+
+/* Search */
+.search-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.search-row input, .search-row select {
+  padding: 9px 14px; border: 1.5px solid var(--ngo-border); border-radius: 50px;
+  background: rgba(255,255,255,.06); color: #e2e8f4; font-family: 'DM Sans',sans-serif;
+  font-size: .86rem; outline: none; transition: border-color .2s;
+}
+.search-row input { flex: 1; min-width: 180px; }
+.search-row input:focus, .search-row select:focus { border-color: var(--ngo-ac); }
+.search-row input::placeholder { color: #2a4a7a; }
+.search-row select option { background: var(--ngo-dark); }
+
+/* Empty state */
+.empty-ngo { text-align: center; padding: 60px 20px; color: #4a7ab0; }
+.empty-ngo .ei { font-size: 3rem; margin-bottom: 14px; }
+
+/* Live indicator */
+.live-dot { display: inline-flex; align-items: center; gap: 5px; font-size: .7rem; font-weight: 700; color: #52b788; }
+.live-dot::before { content: ''; width: 7px; height: 7px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite; }
+
+/* Loader */
+.loader-row { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px; color: #4a7ab0; font-size: .86rem; }
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(96,165,250,.2); border-top-color: var(--ngo-ac); border-radius: 50%; animation: spin .7s linear infinite; }
+
+/* Responsive */
+@media(max-width:900px) {
+  .dash-layout { grid-template-columns: 1fr; }
+  .ngo-sidebar { position: static; height: auto; display: flex; flex-wrap: wrap; gap: 4px; padding: 10px; }
+  .sb-section, .sb-div, .ngo-sb-profile { display: none; }
+  .ngo-main { padding: 16px; }
+  .ngo-kpi-row { grid-template-columns: 1fr 1fr; }
+  .ngo-statbar { flex-wrap: wrap; }
+  .ngo-stat { min-width: 50%; }
+}
+@media(max-width:600px) {
+  .don-grid { grid-template-columns: 1fr; }
+  .ngo-hero h1 { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo" style="cursor:pointer" onclick="goHome()">
+    <b>Leftover</b><span style="color:var(--ngo-ac)">Lux</span>
+    <small style="background:rgba(96,165,250,.2);color:var(--ngo-ac);font-size:.58rem;padding:2px 8px;border-radius:50px;margin-left:6px;font-family:'DM Sans',sans-serif;font-weight:700;">NGO Portal</small>
+  </div>
+  <div class="nav-right" id="navRight">
+    <!-- Populated by JS -->
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     LANDING VIEW  (shown when not logged in)
+════════════════════════════════════════════════════ -->
+<div id="landingView">
+  <!-- Hero -->
+  <section class="ngo-hero">
+    <div class="wrap" style="position:relative;">
+      <div class="ngo-eyebrow">🤝 For NGOs & Shelters Only</div>
+      <h1>Turn Hotel Surplus<br>Into <em>Hope</em></h1>
+      <p>A dedicated platform for verified NGOs and shelters to claim free surplus food from partner hotels — fresh, daily, zero cost.</p>
+      <div class="ngo-hero-btns">
+        <button class="btn btn-ngo btn-xl" onclick="openModal('authModal')">Register Your NGO</button>
+        <button class="btn btn-ghost btn-xl" onclick="openModal('authModal');switchTab('in')">Sign In →</button>
+      </div>
+    </div>
+    <div class="ngo-statbar">
+      <div class="ngo-stat"><div class="ngo-stat-n">4,200+</div><div class="ngo-stat-l">Meals Donated</div></div>
+      <div class="ngo-stat"><div class="ngo-stat-n">18</div><div class="ngo-stat-l">NGO Partners</div></div>
+      <div class="ngo-stat"><div class="ngo-stat-n">340kg</div><div class="ngo-stat-l">Waste Prevented</div></div>
+      <div class="ngo-stat"><div class="ngo-stat-n">Daily</div><div class="ngo-stat-l">New Donations</div></div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section style="padding:52px 0;background:var(--ngo-dark);">
+    <div class="wrap">
+      <div style="text-align:center;margin-bottom:36px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.9rem;color:#e2e8f4;margin-bottom:8px;">How It Works</h2>
+        <p style="color:#4a7ab0;">Simple. Fast. Free.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+        <div style="text-align:center;padding:24px;background:rgba(255,255,255,.04);border:1px solid var(--ngo-border);border-radius:18px;">
+          <div style="font-size:2.4rem;margin-bottom:12px;">📝</div>
+          <h3 style="color:#e2e8f4;font-size:1rem;margin-bottom:6px;">1. Register</h3>
+          <p style="color:#4a7ab0;font-size:.84rem;line-height:1.6;">Create your NGO profile with details about your organisation, city, and daily capacity.</p>
+        </div>
+        <div style="text-align:center;padding:24px;background:rgba(255,255,255,.04);border:1px solid var(--ngo-border);border-radius:18px;">
+          <div style="font-size:2.4rem;margin-bottom:12px;">🔍</div>
+          <h3 style="color:#e2e8f4;font-size:1rem;margin-bottom:6px;">2. Browse Donations</h3>
+          <p style="color:#4a7ab0;font-size:.84rem;line-height:1.6;">See live donations from hotels in your city — filtered by food type, servings, and expiry time.</p>
+        </div>
+        <div style="text-align:center;padding:24px;background:rgba(255,255,255,.04);border:1px solid var(--ngo-border);border-radius:18px;">
+          <div style="font-size:2.4rem;margin-bottom:12px;">✋</div>
+          <h3 style="color:#e2e8f4;font-size:1rem;margin-bottom:6px;">3. Claim &amp; Collect</h3>
+          <p style="color:#4a7ab0;font-size:.84rem;line-height:1.6;">Claim a donation, get the pickup address, and coordinate collection. Hotel is notified instantly.</p>
+        </div>
+        <div style="text-align:center;padding:24px;background:rgba(255,255,255,.04);border:1px solid var(--ngo-border);border-radius:18px;">
+          <div style="font-size:2.4rem;margin-bottom:12px;">📊</div>
+          <h3 style="color:#e2e8f4;font-size:1rem;margin-bottom:6px;">4. Track Impact</h3>
+          <p style="color:#4a7ab0;font-size:.84rem;line-height:1.6;">See your total meals collected, history, and impact reports in your NGO dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     DASHBOARD VIEW  (shown when logged in)
+════════════════════════════════════════════════════ -->
+<div id="dashView" class="hidden">
+  <div class="dash-layout">
+
+    <!-- Sidebar -->
+    <aside class="ngo-sidebar">
+      <div class="ngo-sb-profile">
+        <div class="ngo-sb-av" id="sbAv">🤝</div>
+        <div class="ngo-sb-name" id="sbName">NGO Name</div>
+        <div class="ngo-sb-city" id="sbCity">City</div>
+        <div class="ngo-sb-verified hidden" id="sbVerified">✓ Verified Partner</div>
+      </div>
+      <div class="sb-section">Donations</div>
+      <button class="sb-link on" data-p="browse" onclick="showPanel('browse')"><span class="ic">🍽️</span> Browse Donations <span class="sb-badge hidden" id="liveBadge">0</span></button>
+      <button class="sb-link" data-p="history" onclick="showPanel('history')"><span class="ic">📋</span> My Claims</button>
+      <div class="sb-div"></div>
+      <div class="sb-section">Account</div>
+      <button class="sb-link" data-p="profile" onclick="showPanel('profile')"><span class="ic">⚙️</span> My Profile</button>
+      <button class="sb-link" onclick="FBAuth.logOut()"><span class="ic">🚪</span> Logout</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="ngo-main">
+
+      <!-- BROWSE PANEL -->
+      <div id="panel-browse" class="panel on">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px;">
+          <div class="ptitle">Available <em>Donations</em></div>
+          <div class="live-dot" id="liveDot">Live updates</div>
+        </div>
+        <p class="psub">Surplus food from hotels in your city — updated in real time</p>
+
+        <div class="info-card">
+          🌿 You can only see donations from hotels in <strong id="yourCity">your city</strong>. Each donation can only be claimed once — contact the hotel at the pickup address to coordinate collection.
+        </div>
+
+        <!-- Search + filters -->
+        <div class="search-row">
+          <input type="text" id="donSearch" placeholder="Search food name, hotel…" oninput="applyDonFilters()"/>
+          <select id="donCityFilter" onchange="applyDonFilters()">
+            <option value="">All Cities</option>
+            <option>Mumbai</option><option>Delhi</option><option>Bangalore</option>
+            <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+          </select>
+        </div>
+        <div class="filter-bar">
+          <button class="fb on" onclick="setDonFilter(this,'all')">All</button>
+          <button class="fb" onclick="setDonFilter(this,'breakfast')">🍳 Breakfast</button>
+          <button class="fb" onclick="setDonFilter(this,'lunch')">🥗 Lunch</button>
+          <button class="fb" onclick="setDonFilter(this,'dinner')">🍽️ Dinner</button>
+          <button class="fb" onclick="setDonFilter(this,'dessert')">🍮 Dessert</button>
+          <button class="fb" onclick="setDonFilter(this,'buffet')">🥘 Buffet</button>
+        </div>
+        <div id="browseLoader" class="loader-row"><div class="spinner"></div> Loading donations…</div>
+        <div id="donGrid" class="don-grid"></div>
+        <div id="donEmpty" class="empty-ngo hidden">
+          <div class="ei">🤝</div>
+          <p style="font-size:1rem;font-weight:700;color:#7aace8;margin-bottom:6px;">No donations available right now</p>
+          <p style="font-size:.86rem;">Hotels post donations daily — check back soon or try a different city filter.</p>
+        </div>
+      </div>
+
+      <!-- HISTORY PANEL -->
+      <div id="panel-history" class="panel">
+        <div class="ptitle">My <em>Claims</em></div>
+        <p class="psub">All food donations your organisation has claimed</p>
+        <div class="ngo-kpi-row" id="impactKPIs">
+          <div class="ngo-kpi"><div class="ngo-kpi-lbl">Total Claimed</div><div class="ngo-kpi-val" id="kpiClaims">0</div><div class="ngo-kpi-sub">Donations</div></div>
+          <div class="ngo-kpi"><div class="ngo-kpi-lbl">Servings Collected</div><div class="ngo-kpi-val" id="kpiServings">0</div><div class="ngo-kpi-sub">People fed</div></div>
+          <div class="ngo-kpi"><div class="ngo-kpi-lbl">Hotels Worked With</div><div class="ngo-kpi-val" id="kpiHotels">0</div><div class="ngo-kpi-sub">Partner hotels</div></div>
+        </div>
+        <div id="historyLoader" class="loader-row hidden"><div class="spinner"></div></div>
+        <div id="historyList"></div>
+        <div id="historyEmpty" class="empty-ngo hidden">
+          <div class="ei">📋</div>
+          <p style="font-size:1rem;font-weight:700;color:#7aace8;margin-bottom:6px;">No claims yet</p>
+          <p style="font-size:.86rem;">Go to Browse Donations to claim your first pickup.</p>
+          <button class="btn btn-ngo" style="margin-top:16px;" onclick="showPanel('browse')">Browse Donations →</button>
+        </div>
+      </div>
+
+      <!-- PROFILE PANEL -->
+      <div id="panel-profile" class="panel">
+        <div class="ptitle">My <em>Profile</em></div>
+        <p class="psub">Update your NGO's details — this is visible to hotel admins</p>
+        <div class="profile-form-wrap pfw">
+          <h3>🏢 Organisation Details</h3>
+          <div class="fgrid">
+            <div class="fgroup"><label>Organisation Name *</label><input id="pf-name" type="text" placeholder="e.g. Roti Bank Mumbai"/></div>
+            <div class="fgroup"><label>Organisation Type</label>
+              <select id="pf-type">
+                <option value="food_bank">Food Bank</option>
+                <option value="shelter">Shelter Home</option>
+                <option value="orphanage">Orphanage</option>
+                <option value="old_age">Old Age Home</option>
+                <option value="other">Other NGO</option>
+              </select>
+            </div>
+            <div class="fgroup"><label>Contact Number</label><input id="pf-phone" type="tel" placeholder="10-digit number"/></div>
+            <div class="fgroup"><label>City *</label>
+              <select id="pf-city">
+                <option>Mumbai</option><option>Delhi</option><option>Bangalore</option>
+                <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+              </select>
+            </div>
+            <div class="fgroup"><label>Daily Capacity (servings)</label><input id="pf-cap" type="number" placeholder="e.g. 50"/></div>
+            <div class="fgroup"><label>Food Preference</label>
+              <select id="pf-pref">
+                <option value="any">Any food</option>
+                <option value="veg">Vegetarian only</option>
+                <option value="cooked">Cooked meals only</option>
+              </select>
+            </div>
+            <div class="fgroup fspan"><label>Address (for hotel coordination)</label><input id="pf-addr" type="text" placeholder="Full address of your organisation"/></div>
+            <div class="fgroup fspan"><label>Brief Description</label><textarea id="pf-desc" rows="3" placeholder="Tell hotels about your work — who you serve, how many people…"></textarea></div>
+          </div>
+          <button class="btn btn-ngo btn-lg" style="margin-top:8px;" id="saveProfileBtn" onclick="saveProfile()">Save Profile</button>
+          <p style="font-size:.75rem;color:#2a4a7a;margin-top:10px;">💡 Completing your profile helps hotels trust your organisation and improves your chance of getting verified.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- CLAIM MODAL -->
+<div class="modal-bg claim-modal" id="claimModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('claimModal')">✕</button>
+    <h2>🤝 Claim This Donation</h2>
+    <p class="modal-sub">Confirm your pickup intent. The hotel will be notified.</p>
+    <div id="claimDonInfo" style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.15);border-radius:12px;padding:14px;margin-bottom:18px;font-size:.84rem;color:#7aace8;"></div>
+    <div class="fgroup" style="margin-bottom:14px;">
+      <label style="color:#4a7ab0;">Your Contact Name *</label>
+      <input id="claimContact" type="text" placeholder="Name of person collecting" style="background:rgba(255,255,255,.08);border-color:rgba(96,165,250,.2);color:#e2e8f4;"/>
+    </div>
+    <div class="fgroup" style="margin-bottom:18px;">
+      <label style="color:#4a7ab0;">Contact Number *</label>
+      <input id="claimPhone" type="tel" placeholder="Hotel may call to confirm" style="background:rgba(255,255,255,.08);border-color:rgba(96,165,250,.2);color:#e2e8f4;"/>
+    </div>
+    <button class="btn btn-ngo btn-full btn-lg" id="confirmClaimBtn" onclick="confirmClaim()">Confirm Claim</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-bg" id="authModal">
+  <div class="modal" style="background:var(--ngo-dark);border:1px solid var(--ngo-border);">
+    <button class="modal-close" onclick="closeModal('authModal')" style="color:#4a7ab0;">✕</button>
+    <h2 style="color:#e2e8f4;" id="authTitle">NGO Portal Access</h2>
+    <p class="modal-sub" id="authSub" style="color:#4a7ab0;">Sign in or register your organisation</p>
+    <div class="modal-tabs" style="background:rgba(255,255,255,.06);">
+      <button class="mtab on" id="tab-in" onclick="switchTab('in')" style="color:#4a7ab0;">Sign In</button>
+      <button class="mtab" id="tab-up" onclick="switchTab('up')" style="color:#4a7ab0;">Register NGO</button>
+    </div>
+
+    <!-- Sign In -->
+    <div id="formIn" class="form-stack">
+      <div class="fgroup"><label style="color:#4a7ab0;">Email</label><input type="email" id="liEmail" placeholder="you@ngo.org" style="background:rgba(255,255,255,.07);border-color:rgba(96,165,250,.2);color:#e2e8f4;"/></div>
+      <div class="fgroup"><label style="color:#4a7ab0;">Password</label><input type="password" id="liPass" placeholder="••••••••" style="background:rgba(255,255,255,.07);border-color:rgba(96,165,250,.2);color:#e2e8f4;"/></div>
+      <button class="btn btn-ngo btn-full btn-lg" id="liBtn" onclick="doLogin()">Sign In</button>
+      <p class="modal-footer-txt" style="color:#4a7ab0;">New organisation? <a onclick="switchTab('up')" style="color:var(--ngo-ac);cursor:pointer;font-weight:700;">Register →</a></p>
+    </div>
+
+    <!-- Register -->
+    <div id="formUp" class="form-stack hidden">
+      <div class="fgroup"><label style="color:#4a7ab0;">Organisation Name *</label><input type="text" id="suName" placeholder="e.g. Roti Bank Mumbai" style="background:rgba(255,255,255,.07);border-color:rgba(96,165,250,.2);color:#e2e8f4;"/></div>
+      <div class="fgrid">
+        <div class="fgroup"><label style="color:#4a7ab0;">City *</label>
+          <select id="suCity" style="background:rgba(255,255,255,.07);border-color:rgba(96,165,250,.2);color:#e2e8f4;">
+            <option value="">Select city</option>
+            <option>Mumbai</option><option>Delhi</option><option>Bangalore</option>
+            <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+          </select>
+        </div>
+        <div class="fgroup"><label style="color:#4a7ab0;">Org Type</label>
+          <select id="suType" style="background:rgba(255,255,255,.07);border-color:rgba(96,165,250,.2);color:#e2e8f4;">
+            <option value="food_bank">Food Bank</option><option value="shelter">Shelter</option>
+            <option value="orphanage">Orphanage</option><option value="old_age">Old Age Home</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgroup"><label style="color:#4a7ab0;">Email *</label><input type="email" id="suEmail" placeholder="contact@ngo.org" style="background:rgba(255,255,255,.07);border-color:rgba(96,165,250,.2);color:#e2e8f4;"/></div>
+      <div class="fgroup"><label style="color:#4a7ab0;">Password *</label><input type="password" id="suPass" placeholder="Min. 6 characters" style="background:rgba(255,255,255,.07);border-color:rgba(96,165,250,.2);color:#e2e8f4;"/></div>
+      <button class="btn btn-ngo btn-full btn-lg" id="suBtn" onclick="doSignup()">Register Organisation</button>
+      <p class="modal-footer-txt" style="color:#4a7ab0;">Already registered? <a onclick="switchTab('in')" style="color:var(--ngo-ac);cursor:pointer;font-weight:700;">Sign in →</a></p>
+    </div>
+  </div>
+</div>
+
+<div id="toastBox"></div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════
+   NGO PORTAL — ngo.html
+   Separate, fully independent portal for NGOs/shelters.
+   Customers and hotels cannot access this page.
+   Role: 'ngo' only.
+═══════════════════════════════════════════════════════ */
+
+let NGO = null;          // logged-in NGO user
+let allDonations = [];   // full donations list
+let activeFilter = 'all';
+let pendingClaimId = null; // donation being claimed
+let unsubDonations = null;
+
+/* ── Boot ─────────────────────────────────────────── */
+(async () => {
+  const sess = getSession();
+  if (sess && sess.role === 'ngo') {
+    NGO = sess;
+    showDashboard();
+  } else {
+    showLanding();
+  }
+})();
+
+function showLanding() {
+  document.getElementById('landingView').classList.remove('hidden');
+  document.getElementById('dashView').classList.add('hidden');
+  document.getElementById('navRight').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="openModal('authModal');switchTab('in')">Sign In</button>
+    <button class="btn btn-ngo btn-sm" onclick="openModal('authModal');switchTab('up')">Register NGO</button>`;
+}
+
+async function showDashboard() {
+  document.getElementById('landingView').classList.add('hidden');
+  document.getElementById('dashView').classList.remove('hidden');
+
+  const name = NGO.orgName || NGO.name || 'NGO';
+  document.getElementById('sbName').textContent = name;
+  document.getElementById('sbCity').textContent = '📍 ' + (NGO.city || '');
+  document.getElementById('sbAv').textContent   = name[0]?.toUpperCase() || '🤝';
+  document.getElementById('yourCity').textContent = NGO.city || 'your city';
+
+  // Nav
+  document.getElementById('navRight').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:50px;padding:5px 14px 5px 7px;">
+      <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--ngo-ac),#3b82f6);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;">${name[0]?.toUpperCase()||'N'}</div>
+      <span style="font-size:.82rem;color:#e2e8f4;">${name}</span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="FBAuth.logOut()">Logout</button>`;
+
+  if (NGO.verified) document.getElementById('sbVerified').classList.remove('hidden');
+
+  // Start real-time donations
+  loadBrowse();
+  loadProfile();
+}
+
+function goHome() {
+  const sess = getSession();
+  if (sess) { window.location.href = 'index.html'; }
+  else { window.location.href = 'index.html'; }
+}
+
+/* ── Panel router ─────────────────────────────────── */
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('on'));
+  document.getElementById('panel-' + name)?.classList.add('on');
+  document.querySelector(`.sb-link[data-p="${name}"]`)?.classList.add('on');
+  if (name === 'history') loadHistory();
+}
+
+/* ── Browse donations ─────────────────────────────── */
+function loadBrowse() {
+  document.getElementById('browseLoader').classList.remove('hidden');
+  // Real-time listener
+  if (unsubDonations) unsubDonations();
+  unsubDonations = FBDonations.listen(donations => {
+    allDonations = donations;
+    document.getElementById('browseLoader').classList.add('hidden');
+    applyDonFilters();
+    // Update live badge
+    const avail = donations.filter(d => d.status === 'available').length;
+    const badge = document.getElementById('liveBadge');
+    badge.textContent = avail;
+    badge.classList.toggle('hidden', avail === 0);
+  }, NGO?.city || null);
+}
+
+function setDonFilter(btn, cat) {
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  activeFilter = cat;
+  applyDonFilters();
+}
+
+function applyDonFilters() {
+  const q    = document.getElementById('donSearch').value.toLowerCase();
+  const city = document.getElementById('donCityFilter').value;
+  let list   = [...allDonations];
+  if (activeFilter !== 'all') list = list.filter(d => d.cat === activeFilter);
+  if (q)    list = list.filter(d => (d.name + d.hotelName + d.notes).toLowerCase().includes(q));
+  if (city) list = list.filter(d => d.city === city);
+  renderDonations(list);
+}
+
+function renderDonations(list) {
+  const grid  = document.getElementById('donGrid');
+  const empty = document.getElementById('donEmpty');
+  if (!list.length) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  grid.innerHTML = list.map(d => {
+    const photo   = d.photoURL || getFoodPhoto(d.cat, d._seed);
+    const isAvail = d.status === 'available';
+    return `
+    <article class="don-card ${isAvail ? '' : 'don-claimed'}">
+      <div class="don-img-wrap">
+        <img class="don-img" src="${photo}" alt="${d.name}" loading="lazy" onerror="this.src='${FOOD_PHOTOS.buffet[0]}'"/>
+        <div class="don-img-overlay"></div>
+        <span class="don-avail-badge ${isAvail ? 'dab-avail' : 'dab-claimed'}">${isAvail ? '🟢 Available' : '✓ Claimed'}</span>
+        <span class="don-servings">🍽 ${d.servings} servings</span>
+      </div>
+      <div class="don-body">
+        <div class="don-hotel">${d.hotelName}</div>
+        <h3 class="don-name">${d.name}</h3>
+        <div class="don-meta">
+          <span>⏱ Expires ${d.expires}</span>
+          <span>📍 ${d.city}</span>
+          ${d.cat ? `<span>🏷 ${d.cat}</span>` : ''}
+        </div>
+        <p class="don-notes">${d.notes || ''}</p>
+        <div class="don-addr"><strong>Pickup:</strong> ${d.pickupAddress}</div>
+        <div class="don-footer">
+          ${isAvail
+            ? `<button class="btn btn-ngo" style="flex:1;" onclick="openClaimModal('${d.id}','${d.name.replace(/'/g,"\\'")}','${d.servings}','${d.pickupAddress.replace(/'/g,"\\'")}')">🤝 Claim This</button>`
+            : `<div class="don-claimed-info">✓ Claimed by ${d.claimedByName || 'another NGO'}</div>`}
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+/* ── Claim flow ───────────────────────────────────── */
+function openClaimModal(id, name, servings, addr) {
+  pendingClaimId = id;
+  document.getElementById('claimDonInfo').innerHTML = `
+    <strong style="color:#e2e8f4;">${name}</strong><br>
+    🍽 ${servings} servings &nbsp;|&nbsp; 📍 ${addr}`;
+  document.getElementById('claimContact').value = NGO.name || '';
+  document.getElementById('claimPhone').value   = NGO.contact || '';
+  openModal('claimModal');
+}
+
+async function confirmClaim() {
+  const contact = document.getElementById('claimContact').value.trim();
+  const phone   = document.getElementById('claimPhone').value.trim();
+  if (!contact || !phone) { toast('Please enter contact name and phone', 'warn'); return; }
+  if (!pendingClaimId)    { toast('No donation selected', 'err'); return; }
+
+  const btn = document.getElementById('confirmClaimBtn');
+  btn.disabled = true; btn.textContent = 'Claiming…';
+
+  try {
+    await FBDonations.claim(pendingClaimId, {
+      uid:     NGO.uid,
+      id:      NGO.uid,
+      orgName: NGO.orgName || NGO.name,
+      name:    NGO.orgName || NGO.name,
+      contact, phone,
+    });
+    closeModal('claimModal');
+    toast('🤝 Donation claimed! Contact the hotel at the pickup address.', 'ok', 5000);
+    pendingClaimId = null;
+    loadBrowse();
+  } catch(e) {
+    toast(e.message || 'Claim failed. Please try again.', 'err');
+  }
+  btn.disabled = false; btn.textContent = 'Confirm Claim';
+}
+
+/* ── Claim history ────────────────────────────────── */
+async function loadHistory() {
+  document.getElementById('historyLoader').classList.remove('hidden');
+  document.getElementById('historyList').innerHTML = '';
+  document.getElementById('historyEmpty').classList.add('hidden');
+
+  // Get donations claimed by this NGO
+  let claimed = [];
+  if (DEMO) {
+    // In demo: filter by claimedById matching NGO uid
+    const all = _LS.getDonations({});
+    claimed = all.filter(d => d.claimedById === NGO.uid || d.claimedByName === (NGO.orgName || NGO.name));
+  } else {
+    const snap = await DB.collection('donations')
+      .where('claimedById', '==', NGO.uid)
+      .orderBy('claimedAt', 'desc')
+      .get();
+    claimed = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  document.getElementById('historyLoader').classList.add('hidden');
+
+  // KPIs
+  const totalServings = claimed.reduce((s, d) => s + (d.servings || 0), 0);
+  const uniqueHotels  = new Set(claimed.map(d => d.hotelId)).size;
+  document.getElementById('kpiClaims').textContent   = claimed.length;
+  document.getElementById('kpiServings').textContent = totalServings;
+  document.getElementById('kpiHotels').textContent   = uniqueHotels;
+
+  if (!claimed.length) { document.getElementById('historyEmpty').classList.remove('hidden'); return; }
+
+  document.getElementById('historyList').innerHTML = claimed.map(d => {
+    const photo = d.photoURL || getFoodPhoto(d.cat, d._seed);
+    const ts    = d.claimedAt ? new Date(d.claimedAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+    return `
+    <div class="history-card">
+      <img class="history-img" src="${photo}" alt="${d.name}" onerror="this.src='${FOOD_PHOTOS.buffet[0]}'"/>
+      <div class="history-info">
+        <div class="history-name">${d.name}</div>
+        <div class="history-meta">From ${d.hotelName} · 🍽 ${d.servings} servings · ${ts}</div>
+        <div class="history-meta" style="margin-top:3px;">📍 ${d.pickupAddress}</div>
+      </div>
+      <span class="history-status ${d.status === 'claimed' ? 'hs-claimed' : 'hs-completed'}">${d.status}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── Profile ──────────────────────────────────────── */
+function loadProfile() {
+  if (!NGO) return;
+  document.getElementById('pf-name').value = NGO.orgName || NGO.name || '';
+  document.getElementById('pf-phone').value= NGO.contact || '';
+  document.getElementById('pf-cap').value  = NGO.capacity || '';
+  document.getElementById('pf-addr').value = NGO.address  || '';
+  document.getElementById('pf-desc').value = NGO.desc     || '';
+  if (NGO.city) document.getElementById('pf-city').value  = NGO.city;
+  if (NGO.orgType) document.getElementById('pf-type').value = NGO.orgType;
+  if (NGO.foodPref) document.getElementById('pf-pref').value = NGO.foodPref;
+}
+
+async function saveProfile() {
+  const data = {
+    orgName:  document.getElementById('pf-name').value.trim(),
+    city:     document.getElementById('pf-city').value,
+    orgType:  document.getElementById('pf-type').value,
+    contact:  document.getElementById('pf-phone').value.trim(),
+    capacity: parseInt(document.getElementById('pf-cap').value) || 0,
+    foodPref: document.getElementById('pf-pref').value,
+    address:  document.getElementById('pf-addr').value.trim(),
+    desc:     document.getElementById('pf-desc').value.trim(),
+  };
+  if (!data.orgName) { toast('Organisation name is required', 'err'); return; }
+
+  const btn = document.getElementById('saveProfileBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  try {
+    await FBNGOs.update(NGO.uid, data);
+    NGO = { ...NGO, ...data };
+    setSession(NGO);
+    document.getElementById('sbName').textContent = data.orgName;
+    document.getElementById('sbCity').textContent = '📍 ' + data.city;
+    toast('Profile saved successfully ✅');
+  } catch(e) {
+    toast(e.message || 'Failed to save', 'err');
+  }
+  btn.disabled = false; btn.textContent = 'Save Profile';
+}
+
+/* ── Auth ─────────────────────────────────────────── */
+let _tab = 'in';
+function switchTab(t) {
+  _tab = t;
+  ['in','up'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('on', x===t);
+    document.getElementById('form'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('hidden', x!==t);
+  });
+  document.getElementById('authTitle').textContent = t==='in' ? 'NGO Portal Access' : 'Register Your NGO';
+  document.getElementById('authSub').textContent   = t==='in' ? 'Sign in to your NGO account' : 'Join FOODBRIDGE as a verified partner';
+}
+
+async function doLogin() {
+  const email = document.getElementById('liEmail').value.trim();
+  const pass  = document.getElementById('liPass').value;
+  if (!email||!pass) { toast('Fill all fields', 'warn'); return; }
+  const btn = document.getElementById('liBtn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const u = await FBAuth.signIn(email, pass);
+    if (u.role !== 'ngo') {
+      FBAuth.logOut();
+      toast('This account is not registered as an NGO. Use the hotel or customer portal.', 'err', 5000);
+      btn.disabled = false; btn.textContent = 'Sign In'; return;
+    }
+    NGO = u;
+    closeModal('authModal');
+    showDashboard();
+  } catch(e) {
+    toast(e.message || 'Login failed', 'err');
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+async function doSignup() {
+  const name  = document.getElementById('suName').value.trim();
+  const city  = document.getElementById('suCity').value;
+  const email = document.getElementById('suEmail').value.trim();
+  const pass  = document.getElementById('suPass').value;
+  const type  = document.getElementById('suType').value;
+  if (!name||!city||!email||!pass) { toast('Fill all required fields', 'warn'); return; }
+  if (pass.length < 6) { toast('Password min 6 characters', 'warn'); return; }
+  const btn = document.getElementById('suBtn');
+  btn.disabled = true; btn.textContent = 'Registering…';
+  try {
+    const u = await FBAuth.signUp(email, pass, { name, orgName: name, city, orgType: type, role: 'ngo' });
+    NGO = u;
+    closeModal('authModal');
+    showDashboard();
+    toast('Welcome to FOODBRIDGE! Complete your profile to get verified 🎉', 'ok', 5000);
+    setTimeout(() => showPanel('profile'), 1000);
+  } catch(e) {
+    toast(e.message || 'Registration failed', 'err');
+    btn.disabled = false; btn.textContent = 'Register Organisation';
+  }
+}
+
+/* ── Modal helpers ────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+document.addEventListener('click', e => { if (e.target.classList.contains('modal-bg')) { e.target.classList.remove('open'); document.body.style.overflow=''; } });
+
+/* ── Toast ────────────────────────────────────────── */
+function toast(msg, type='ok', dur=3600) {
+  const b = document.getElementById('toastBox'), t = document.createElement('div');
+  const ic = { ok:'✅', err:'❌', info:'ℹ️', warn:'⚠️' };
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${ic[type]||'ℹ️'}</span> ${msg}`;
+  b.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, dur);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FOODBRIDGE — Hotel Dashboard</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+body { background:#F7E7CE; }
+.layout { display:grid; grid-template-columns:230px 1fr; min-height:calc(100vh - 54px); }
+
+/* TOPBAR */
+.topbar { height:54px; background:var(--brown); display:flex; align-items:center; justify-content:space-between; padding:0 24px; position:sticky; top:0; z-index:500; box-shadow:0 2px 20px rgba(0,0,0,.3); }
+.logo { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:700; color:#FFFFFF; }
+.logo em { color:var(--amber-lt); font-style:normal; }
+.logo small { font-size:.6rem; background:var(--green-mid); color:#fff; padding:2px 7px; border-radius:50px; margin-left:6px; vertical-align:middle; font-family:'DM Sans',sans-serif; }
+.tb-r { display:flex; align-items:center; gap:8px; }
+.hotel-chip { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.08); border-radius:50px; padding:4px 14px 4px 6px; }
+.hav { width:26px; height:26px; border-radius:50%; background:var(--amber); display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; color:#fff; }
+.hname { font-size:.8rem; color:#FFFFFF; font-weight:500; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* SIDEBAR */
+.sidebar { background:var(--brown); padding:20px 12px; position:sticky; top:54px; height:calc(100vh - 54px); overflow-y:auto; }
+.sb-section { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#C9A227; padding:0 10px; margin:16px 0 7px; }
+.sb-section:first-child { margin-top:0; }
+.sb-link { display:flex; align-items:center; gap:9px; padding:9px 12px; border-radius:10px; color:#C9A227; font-size:.84rem; font-weight:500; cursor:pointer; transition:all .18s; margin-bottom:2px; border:none; background:none; width:100%; text-align:left; }
+.sb-link:hover { background:rgba(255,255,255,.07); color:#FFFFFF; }
+.sb-link.on { background:rgba(201,162,39,.24); color:var(--amber-lt); }
+.sb-link .ic { font-size:.9rem; width:18px; text-align:center; }
+.sb-badge { margin-left:auto; background:var(--orange); color:#fff; font-size:.6rem; font-weight:700; padding:2px 7px; border-radius:50px; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;}50%{opacity:.6;} }
+.sb-divider { height:1px; background:rgba(255,255,255,.07); margin:12px 10px; }
+.sb-link.donate-link { color:#C9A227; }
+.sb-link.donate-link.on,.sb-link.donate-link:hover { background:rgba(106,30,44,.32); color:var(--ngo-gold); }
+
+/* MAIN */
+.main { padding:26px 28px; overflow-y:auto; }
+.panel { display:none; animation:pageIn .3s ease; }
+.panel.on { display:block; }
+.ptitle { font-family:'Cormorant Garamond',serif; font-size:1.55rem; font-weight:700; margin-bottom:3px; }
+.psub { color:var(--gray); font-size:.86rem; margin-bottom:22px; }
+
+/* KPI GRID */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:22px; }
+.kpi { background:#fff; border-radius:var(--r-lg); padding:17px 19px; box-shadow:var(--sh-sm); }
+.kpi-lbl { font-size:.68rem; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+.kpi-val { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:700; line-height:1; }
+.kpi-ch  { font-size:.7rem; margin-top:5px; }
+.kpi.ngo-kpi { background:linear-gradient(135deg,var(--ngo-dark),#6A1E2C); }
+.kpi.ngo-kpi .kpi-lbl { color:#C9A227; }
+.kpi.ngo-kpi .kpi-val { color:var(--ngo-gold); }
+.kpi.ngo-kpi .kpi-ch  { color:#C9A227; }
+
+/* TABLE CARD */
+.tbl-card { background:#fff; border-radius:var(--r-lg); padding:18px 20px; box-shadow:var(--sh-sm); margin-bottom:18px; overflow:hidden; }
+.tbl-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+.tbl-head h3 { font-weight:700; font-size:.96rem; }
+table { width:100%; border-collapse:collapse; }
+th { text-align:left; font-size:.66rem; font-weight:700; color:var(--gray); padding:8px 12px; border-bottom:2px solid var(--border); text-transform:uppercase; letter-spacing:.5px; }
+td { padding:11px 12px; border-bottom:1px solid var(--border); font-size:.83rem; vertical-align:middle; }
+tr:last-child td { border:none; }
+tr:hover td { background:rgba(201,162,39,.08); }
+.td-photo { width:44px; height:44px; border-radius:8px; object-fit:cover; }
+
+/* FORM CARD */
+.form-card { background:#fff; border-radius:var(--r-lg); padding:22px 24px; box-shadow:var(--sh-sm); margin-bottom:18px; }
+.form-card h3 { font-weight:700; font-size:.96rem; margin-bottom:16px; padding-bottom:12px; border-bottom:1.5px solid var(--border); }
+
+/* PHOTO UPLOAD preview in form */
+.photo-options { display:flex; gap:8px; margin-bottom:14px; }
+.po-btn { flex:1; padding:9px; text-align:center; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; font-size:.78rem; font-weight:600; color:var(--gray); transition:all .18s; background:#fff; }
+.po-btn:hover { border-color:var(--amber); color:var(--amber); }
+.po-btn.on { border-color:var(--amber); background:#F7E7CE; color:var(--amber); }
+
+/* DONATION SECTION */
+.don-hero { background:linear-gradient(135deg,var(--ngo-dark),#6A1E2C); border-radius:var(--r-lg); padding:24px 28px; margin-bottom:18px; display:flex; align-items:center; gap:20px; }
+.don-hero-icon { font-size:2.8rem; flex-shrink:0; }
+.don-hero h2 { font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:#fff; margin-bottom:5px; }
+.don-hero p  { color:#F7E7CE; font-size:.84rem; line-height:1.6; }
+
+/* ORDER STATUS colors */
+.status-pending   { color:var(--amber); font-weight:700; }
+.status-confirmed { color:var(--blue); font-weight:700; }
+.status-ready     { color:var(--green); font-weight:700; }
+.status-delivered { color:var(--gray); font-weight:700; }
+
+/* NGO partners list */
+.ngo-card { display:flex; align-items:center; gap:14px; padding:14px 16px; background:#fff; border-radius:12px; box-shadow:var(--sh-sm); margin-bottom:10px; }
+.ngo-av   { width:40px; height:40px; border-radius:10px; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.ngo-info { flex:1; }
+.ngo-name { font-weight:700; font-size:.88rem; margin-bottom:2px; }
+.ngo-meta { font-size:.73rem; color:var(--gray); display:flex; gap:12px; flex-wrap:wrap; }
+
+@media(max-width:900px){
+  .layout { grid-template-columns:1fr; }
+  .sidebar { position:static; height:auto; display:flex; flex-wrap:wrap; gap:4px; padding:10px; }
+  .sb-section,.sb-divider { display:none; }
+  .kpi-grid { grid-template-columns:1fr 1fr; }
+  .main { padding:16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">Leftover<em>Lux</em> <small>Hotel Admin</small></div>
+  <div class="tb-r">
+    <div class="hotel-chip"><div class="hav" id="hav">H</div><span class="hname" id="hname">Loading...</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="FBAuth.logOut()">Logout</button>
+  </div>
+</div>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-section">Main</div>
+  <button class="sb-link on" data-p="overview"  onclick="showPanel('overview')"><span class="ic">📊</span> Overview</button>
+  <button class="sb-link"    data-p="listings"  onclick="showPanel('listings')"><span class="ic">🍽️</span> My Listings</button>
+  <button class="sb-link"    data-p="orders"    onclick="showPanel('orders')"><span class="ic">📦</span> Orders <span class="sb-badge hidden" id="orderBadge">0</span></button>
+  <button class="sb-link"    data-p="add"       onclick="showPanel('add')"><span class="ic">➕</span> Add Listing</button>
+  <div class="sb-divider"></div>
+  <div class="sb-section">Community</div>
+  <button class="sb-link donate-link" data-p="donate"     onclick="showPanel('donate')"><span class="ic">🤝</span> Donate Food</button>
+  <button class="sb-link donate-link" data-p="mydonations" onclick="showPanel('mydonations')"><span class="ic">📋</span> My Donations</button>
+  <button class="sb-link donate-link" data-p="ngos"       onclick="showPanel('ngos')"><span class="ic">🏢</span> NGO Partners</button>
+  <div class="sb-divider"></div>
+  <div class="sb-section">Account</div>
+  <button class="sb-link" onclick="FBAuth.logOut()"><span class="ic">🚪</span> Logout</button>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <div id="panel-overview" class="panel on">
+    <div class="ptitle" id="greeting">Good day! 👋</div>
+    <p class="psub">Your hotel's live performance</p>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-lbl">Live Listings</div><div class="kpi-val text-amber" id="kLive">—</div><div class="kpi-ch text-gray">Active right now</div></div>
+      <div class="kpi"><div class="kpi-lbl">Orders Today</div><div class="kpi-val text-green" id="kOrders">—</div><div class="kpi-ch text-gray" id="kOrdCh">—</div></div>
+      <div class="kpi"><div class="kpi-lbl">Revenue</div><div class="kpi-val" id="kRev">—</div><div class="kpi-ch" style="color:var(--green)">Recovered from waste</div></div>
+      <div class="kpi ngo-kpi"><div class="kpi-lbl">Meals Donated</div><div class="kpi-val" id="kDon">0</div><div class="kpi-ch">❤️ Lives touched</div></div>
+    </div>
+    <div class="tbl-card">
+      <div class="tbl-head"><h3>Recent Orders (Live)</h3><span class="tag tag-green" id="liveIndicator">● Listening</span></div>
+      <table><thead><tr><th>ID</th><th>Customer</th><th>Amount</th><th>Mode</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="ovOrders"><tr><td colspan="6" style="text-align:center;color:var(--gray);padding:28px;">Waiting for orders...</td></tr></tbody></table>
+    </div>
+    <!-- Donate nudge -->
+    <div style="background:linear-gradient(135deg,var(--ngo-dark),#6A1E2C);border-radius:var(--r-lg);padding:20px 24px;display:flex;align-items:center;gap:18px;">
+      <span style="font-size:2.2rem;flex-shrink:0;">🤝</span>
+      <div style="flex:1;"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ngo-gold);font-weight:700;margin-bottom:4px;">Have extra food at end of day?</div><p style="color:#F7E7CE;font-size:.81rem;">Donate instead of discarding. NGOs collect for free.</p></div>
+      <button class="btn btn-ngo" onclick="showPanel('donate')">Donate Now →</button>
+    </div>
+  </div>
+
+  <!-- LISTINGS -->
+  <div id="panel-listings" class="panel">
+    <div class="ptitle">My Listings</div>
+    <p class="psub">All your published food surplus items</p>
+    <div class="tbl-card">
+      <div class="tbl-head"><h3>All Listings</h3><button class="btn btn-amber btn-sm" onclick="showPanel('add')">+ Add New</button></div>
+      <table><thead><tr><th>Photo</th><th>Item</th><th>Cat</th><th>Price</th><th>Qty</th><th>Expires</th><th>Delivery</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="listTbody"><tr><td colspan="9" style="text-align:center;color:var(--gray);padding:28px;">Loading listings...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="panel-orders" class="panel">
+    <div class="ptitle">Incoming Orders <span class="tag tag-green" style="font-size:.65rem;vertical-align:middle;">● Live</span></div>
+    <p class="psub">Real-time orders from customers — updates automatically</p>
+    <div class="tbl-card">
+      <table><thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Mode</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="ordTbody"><tr><td colspan="8" style="text-align:center;color:var(--gray);padding:36px;">No orders yet.</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ADD LISTING -->
+  <div id="panel-add" class="panel">
+    <div class="ptitle">Add New Listing</div>
+    <p class="psub">List a surplus food item with discount for customers</p>
+
+    <!-- Photo section -->
+    <div class="form-card" id="photoCard">
+      <h3>📸 Dish Photo</h3>
+      <div class="photo-options">
+        <button class="po-btn on" onclick="setPhotoMode('upload')">📤 Upload Photo</button>
+        <button class="po-btn"    onclick="setPhotoMode('unsplash')">🌄 Use Stock Photo</button>
+      </div>
+
+      <!-- Upload mode -->
+      <div id="uploadMode">
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="photoFile" accept="image/*" onchange="handlePhotoSelect(this)"/>
+          <div class="up-icon">📷</div>
+          <div class="up-txt fw6">Click to upload your dish photo</div>
+          <div class="up-sub">JPG, PNG, WebP — Max 5 MB</div>
+        </div>
+        <img id="photoPreview" class="photo-preview" alt="Preview"/>
+      </div>
+
+      <!-- Stock photo mode -->
+      <div id="unsplashMode" class="hidden">
+        <p class="text-sm text-gray mb8">Choose a category-matched stock photo:</p>
+        <div id="stockGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+        <p class="text-xs text-gray mt8">📸 Free photos from Unsplash</p>
+      </div>
+
+      <div class="fgroup mt12">
+        <label>Or paste image URL</label>
+        <input type="url" id="photoUrl" placeholder="https://..."/>
+      </div>
+    </div>
+
+    <!-- Food details -->
+    <div class="form-card">
+      <h3>📋 Food Details</h3>
+      <div class="fgrid">
+        <div class="fgroup fspan"><label>Item Name *</label><input id="fl-name" type="text" placeholder="e.g. Dal Makhani Thali"/></div>
+        <div class="fgroup"><label>Category *</label>
+          <select id="fl-cat" onchange="refreshStockPhotos()">
+            <option value="breakfast">🍳 Breakfast</option><option value="lunch">🥗 Lunch</option>
+            <option value="dinner" selected>🍽️ Dinner</option><option value="dessert">🍮 Dessert</option><option value="buffet">🥘 Buffet</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Expiry Time *</label><input id="fl-exp" type="text" placeholder="e.g. 9:00 PM"/></div>
+        <div class="fgroup"><label>Original Price (₹) *</label><input id="fl-orig" type="number" oninput="calcPrice()"/></div>
+        <div class="fgroup"><label>Discount (%) *</label><input id="fl-disc" type="number" min="10" max="90" oninput="calcPrice()"/></div>
+        <div class="fgroup"><label>Discounted Price</label><input id="fl-new" type="text" readonly style="background:#F7E7CE;"/></div>
+        <div class="fgroup"><label>Quantity (servings) *</label><input id="fl-qty" type="number" placeholder="10"/></div>
+        <div class="fgroup"><label>City *</label>
+          <select id="fl-city"><option>Mumbai</option><option>Delhi</option><option>Bangalore</option><option>Hyderabad</option><option>Chennai</option><option>Pune</option></select>
+        </div>
+        <div class="fgroup fspan"><label>Description</label><textarea id="fl-desc" placeholder="Describe ingredients, portions, dietary info..."></textarea></div>
+        <div class="fgroup fspan">
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:.86rem;font-weight:500;cursor:pointer;">
+            <input type="checkbox" id="fl-del" checked style="width:16px;height:16px;accent-color:var(--green);"/> 🛵 Enable Home Delivery
+          </label>
+        </div>
+      </div>
+      <div class="flex-c gap12 mt20">
+        <button class="btn btn-amber btn-lg" id="publishBtn" onclick="publishListing()">Publish Listing</button>
+        <button class="btn btn-outline text-gray" onclick="clearAddForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DONATE FOOD -->
+  <div id="panel-donate" class="panel">
+    <div class="don-hero">
+      <div class="don-hero-icon">🤝</div>
+      <div>
+        <h2>Donate Surplus Food</h2>
+        <p>List unsold food as a free donation. Verified NGOs and shelters will coordinate pickup. Your donation reaches people in need within hours.</p>
+      </div>
+    </div>
+    <div class="form-card">
+      <h3>📋 Donation Details</h3>
+      <div class="fgrid">
+        <div class="fgroup"><label>Food Name *</label><input id="dn-name" type="text" placeholder="e.g. Veg Rice Packs"/></div>
+        <div class="fgroup"><label>Servings *</label><input id="dn-qty" type="number" placeholder="30"/></div>
+        <div class="fgroup"><label>Prepared At</label><input id="dn-prep" type="text" placeholder="e.g. 12:00 PM"/></div>
+        <div class="fgroup"><label>Expires At *</label><input id="dn-exp" type="text" placeholder="e.g. 7:00 PM"/></div>
+        <div class="fgroup fspan"><label>Pickup Address *</label><input id="dn-addr" type="text" placeholder="Full hotel address for NGO pickup"/></div>
+        <div class="fgroup fspan"><label>Notes (dietary info, packaging...)</label><textarea id="dn-notes" placeholder="e.g. Fully vegetarian. Hygienically packed in containers."></textarea></div>
+      </div>
+      <div style="margin-top:14px;padding:12px 16px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.28);border-radius:10px;font-size:.8rem;color:#C9A227;">
+        🌿 Your donation is visible to <strong style="color:var(--ngo-gold)">verified NGOs only</strong> — not to regular customers.
+      </div>
+      <button class="btn btn-ngo btn-lg mt16" id="donateBtn" onclick="postDonation()">🤝 Post Donation</button>
+    </div>
+  </div>
+
+  <!-- MY DONATIONS -->
+  <div id="panel-mydonations" class="panel">
+    <div class="ptitle">My Donations</div>
+    <p class="psub">Track all food donations you've posted</p>
+    <div id="myDonList"><div style="text-align:center;padding:50px;color:var(--gray);">Loading...</div></div>
+  </div>
+
+  <!-- NGO PARTNERS -->
+  <div id="panel-ngos" class="panel">
+    <div class="ptitle">NGO Partners</div>
+    <p class="psub">Verified organisations that collect donated food in your city</p>
+    <div id="ngoList"><div style="text-align:center;padding:50px;color:var(--gray);">Loading...</div></div>
+  </div>
+
+</main>
+</div><!-- /layout -->
+
+<div id="toastBox"></div>
+<div class="loading-overlay hidden" id="loader"><div class="spinner" style="width:36px;height:36px;border-color:rgba(201,162,39,.3);border-top-color:var(--amber);"></div><p>Loading...</p></div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script>
+let HOTEL = null;
+let selectedPhotoUrl = '';
+let selectedPhotoMode = 'upload';
+let unsubOrders = null;
+
+// ── INIT ──────────────────────────────────────────
+(async () => {
+  HOTEL = requireRole('hotel');  // synchronous — redirects if not hotel role
+  if (!HOTEL) return;
+  document.getElementById('hname').textContent = HOTEL.hotelName || HOTEL.name;
+  document.getElementById('hav').textContent   = (HOTEL.hotelName||HOTEL.name||'H')[0].toUpperCase();
+  document.getElementById('greeting').textContent = `Good day, ${HOTEL.hotelName || HOTEL.name}! 👋`;
+  document.getElementById('fl-city').value = HOTEL.city || 'Mumbai';
+  loadOverview();
+  refreshStockPhotos();
+})();
+
+// ── TOAST ─────────────────────────────────────────
+function toast(msg, type='ok') {
+  const box=document.getElementById('toastBox');
+  const t=document.createElement('div'); t.className=`toast toast-${type}`;
+  const icons={ok:'✅',err:'❌',info:'ℹ️',ngo:'🤝'};
+  t.innerHTML=`<span>${icons[type]||'✅'}</span> ${msg}`;
+  box.appendChild(t);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3600);
+}
+
+// ── PANELS ────────────────────────────────────────
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('on'));
+  document.getElementById('panel-'+name)?.classList.add('on');
+  document.querySelector(`.sb-link[data-p="${name}"]`)?.classList.add('on');
+  if (name==='listings')    loadListings();
+  if (name==='orders')      loadOrders();
+  if (name==='mydonations') loadMyDonations();
+  if (name==='ngos')        loadNGOs();
+}
+
+// ── OVERVIEW ──────────────────────────────────────
+async function loadOverview() {
+  try {
+    const listings = await FBListings.getAll({ hotelId: HOTEL.uid });
+    document.getElementById('kLive').textContent = listings.filter(l=>l.status==='live').length;
+
+    const orders = await FBOrders.getByHotel(HOTEL.uid);
+    document.getElementById('kOrders').textContent = orders.length;
+    const rev = orders.reduce((s,o)=>s+(o.total||0),0);
+    document.getElementById('kRev').textContent = '₹'+rev.toLocaleString('en-IN');
+    document.getElementById('kOrdCh').textContent = orders.length ? `${orders.length} orders received` : 'No orders yet';
+
+    renderOverviewOrders(orders.slice(0,5));
+    startOrderListener();
+  } catch(e){ console.error(e); }
+}
+
+function startOrderListener() {
+  if (unsubOrders) return;
+  unsubOrders = FBOrders.listen(HOTEL.uid, orders => {
+    renderOverviewOrders(orders.slice(0,5));
+    document.getElementById('kOrders').textContent = orders.length;
+    const badge = document.getElementById('orderBadge');
+    const pending = orders.filter(o=>o.status==='pending').length;
+    badge.textContent = pending; badge.classList.toggle('hidden', pending===0);
+    if (document.getElementById('panel-orders').classList.contains('on')) renderOrderTable(orders);
+  });
+}
+
+function renderOverviewOrders(orders) {
+  const tbody = document.getElementById('ovOrders');
+  if (!orders.length) { tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:28px;">Waiting for orders...</td></tr>`; return; }
+  tbody.innerHTML = orders.map(o=>`
+    <tr>
+      <td style="font-family:monospace;font-size:.75rem;font-weight:700;">${o.id.slice(-6).toUpperCase()}</td>
+      <td>${o.customerName||'—'}</td>
+      <td><strong>₹${(o.total||0).toLocaleString('en-IN')}</strong></td>
+      <td>${o.mode==='delivery'?'🛵 Delivery':'🏨 Pickup'}</td>
+      <td class="status-${o.status}">${o.status?.toUpperCase()}</td>
+      <td>${o.status==='pending'?`<button class="btn btn-sm btn-green" onclick="markOrderReady('${o.id}')">Mark Ready</button>`:''}</td>
+    </tr>`).join('');
+}
+
+// ── LISTINGS ──────────────────────────────────────
+async function loadListings() {
+  const tbody = document.getElementById('listTbody');
+  tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:24px;">Loading...</td></tr>`;
+  const list = await FBListings.getAll({ hotelId: HOTEL.uid });
+  if (!list.length) { tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:28px;">No listings yet. <a style="color:var(--amber);cursor:pointer;" onclick="showPanel('add')">Add your first!</a></td></tr>`; return; }
+  tbody.innerHTML = list.map(l=>`
+    <tr>
+      <td><img class="td-photo" src="${l.photoURL||getFoodPhoto(l.cat,l.id)}" alt="" onerror="this.src='https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&q=70'"/></td>
+      <td><strong>${l.name}</strong></td>
+      <td><span class="tag tag-amber">${l.cat}</span></td>
+      <td>₹${(l.newPrice||0).toLocaleString('en-IN')} <span class="text-xs text-gray">(${l.disc}% off)</span></td>
+      <td>${l.qty}</td>
+      <td>${l.expires}</td>
+      <td>${l.delivery?'✅':'—'}</td>
+      <td><span class="pill pill-${l.status==='live'?'live':'sold'}">${l.status==='live'?'● Live':'✗ Sold'}</span></td>
+      <td><button class="btn btn-sm btn-red" onclick="archiveListing('${l.id}')">Remove</button></td>
+    </tr>`).join('');
+}
+
+async function archiveListing(id) {
+  if (!confirm('Remove this listing?')) return;
+  await FBListings.archive(id);
+  toast('Listing removed','info'); loadListings();
+}
+
+// ── ADD LISTING ───────────────────────────────────
+function setPhotoMode(mode) {
+  selectedPhotoMode = mode;
+  document.querySelectorAll('.po-btn').forEach((b,i)=>b.classList.toggle('on', (i===0&&mode==='upload')||(i===1&&mode==='unsplash')));
+  document.getElementById('uploadMode').classList.toggle('hidden', mode!=='upload');
+  document.getElementById('unsplashMode').classList.toggle('hidden', mode!=='unsplash');
+  if (mode==='unsplash') refreshStockPhotos();
+}
+
+function refreshStockPhotos() {
+  const cat = document.getElementById('fl-cat')?.value || 'dinner';
+  const pool = FOOD_PHOTOS[cat] || FOOD_PHOTOS.buffet;
+  const grid = document.getElementById('stockGrid');
+  if (!grid) return;
+  grid.innerHTML = pool.map((url,i)=>`
+    <div onclick="selectStock('${url}',this)" style="border-radius:10px;overflow:hidden;cursor:pointer;border:2.5px solid transparent;transition:border .18s;" class="stock-opt">
+      <img src="${url}" style="width:100%;height:90px;object-fit:cover;display:block;" onerror="this.parentElement.style.display='none'"/>
+    </div>`).join('');
+}
+
+function selectStock(url, el) {
+  selectedPhotoUrl = url;
+  document.querySelectorAll('.stock-opt').forEach(e=>e.style.borderColor='transparent');
+  el.style.borderColor='var(--amber)';
+  toast('Stock photo selected ✅');
+}
+
+async function handlePhotoSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { toast('File too large (max 5 MB)','err'); return; }
+  const preview = document.getElementById('photoPreview');
+  const dataUrl = await FBPhoto.previewFile(file);
+  preview.src = dataUrl; preview.classList.add('show');
+  selectedPhotoUrl = '__file__'; // will upload on publish
+  toast('Photo selected! Will upload when you publish.','info');
+}
+
+function calcPrice() {
+  const o=parseFloat(document.getElementById('fl-orig').value)||0;
+  const d=parseFloat(document.getElementById('fl-disc').value)||0;
+  const el=document.getElementById('fl-new');
+  if(o&&d) el.value='₹'+Math.round(o*(1-d/100)).toLocaleString('en-IN');
+  else el.value='';
+}
+
+async function publishListing() {
+  const name = document.getElementById('fl-name').value.trim();
+  const orig = parseFloat(document.getElementById('fl-orig').value);
+  const disc = parseFloat(document.getElementById('fl-disc').value);
+  const qty  = parseInt(document.getElementById('fl-qty').value);
+  const exp  = document.getElementById('fl-exp').value.trim();
+  if (!name||!orig||!disc||!qty||!exp) { toast('Fill all required fields','err'); return; }
+  if (disc<10||disc>90) { toast('Discount must be 10–90%','err'); return; }
+
+  const btn = document.getElementById('publishBtn');
+  btn.innerHTML='<span class="spinner"></span> Publishing...'; btn.disabled=true;
+
+  let photoURL = document.getElementById('photoUrl').value.trim() || selectedPhotoUrl;
+
+  // If file selected, upload to Firebase Storage
+  if (photoURL === '__file__') {
+    const file = document.getElementById('photoFile').files[0];
+    try {
+      photoURL = await FBPhoto.upload(file, `dishes/${HOTEL.uid}`);
+      toast('Photo uploaded! ✅');
+    } catch(e) {
+      toast('Photo upload failed, using stock photo','info');
+      photoURL = getFoodPhoto(document.getElementById('fl-cat').value);
+    }
+  }
+
+  if (!photoURL || photoURL==='__file__') {
+    photoURL = getFoodPhoto(document.getElementById('fl-cat').value);
+  }
+
+  const cat = document.getElementById('fl-cat').value;
+  const data = {
+    hotelId: HOTEL.uid, hotelName: HOTEL.hotelName||HOTEL.name,
+    name, cat, orig, disc,
+    newPrice: Math.round(orig*(1-disc/100)),
+    qty, expires: exp, city: document.getElementById('fl-city').value,
+    desc: document.getElementById('fl-desc').value.trim() || 'Freshly prepared surplus meal.',
+    delivery: document.getElementById('fl-del').checked,
+    pickup: true, rating: 0, photoURL,
+  };
+
+  try {
+    await FBListings.add(data);
+    clearAddForm(); showPanel('listings');
+    toast('Listing published! Customers can see it now ✅');
+  } catch(e) {
+    toast('Failed to publish: '+e.message,'err');
+  }
+  btn.innerHTML='Publish Listing'; btn.disabled=false;
+}
+
+function clearAddForm() {
+  ['fl-name','fl-orig','fl-disc','fl-new','fl-qty','fl-exp','fl-desc','photoUrl'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('photoPreview').classList.remove('show');
+  document.getElementById('photoFile').value='';
+  selectedPhotoUrl='';
+}
+
+// ── ORDERS ────────────────────────────────────────
+async function loadOrders() {
+  const orders = await FBOrders.getByHotel(HOTEL.uid);
+  renderOrderTable(orders);
+}
+
+function renderOrderTable(orders) {
+  const tbody = document.getElementById('ordTbody');
+  if (!orders.length) { tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:28px;">No orders yet.</td></tr>`; return; }
+  tbody.innerHTML = orders.map(o=>{
+    const ts = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleTimeString() : '—';
+    const items = (o.items||[]).map(i=>i.name).join(', ').substring(0,35);
+    return `<tr>
+      <td style="font-family:monospace;font-size:.75rem;font-weight:700;">${o.id.slice(-6).toUpperCase()}</td>
+      <td>${o.customerName||'—'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${items||'—'}</td>
+      <td><strong>₹${(o.total||0).toLocaleString('en-IN')}</strong></td>
+      <td>${o.mode==='delivery'?'🛵':'🏨'} ${o.mode}</td>
+      <td>${ts}</td>
+      <td class="status-${o.status}">${o.status?.toUpperCase()}</td>
+      <td>${getOrderActions(o)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function getOrderActions(o) {
+  if (o.status==='pending')   return `<button class="btn btn-sm btn-amber" onclick="markOrderReady('${o.id}')">Confirm</button>`;
+  if (o.status==='confirmed') return `<button class="btn btn-sm btn-green" onclick="markDone('${o.id}')">Mark Ready</button>`;
+  return `<span class="text-xs text-gray">${o.status}</span>`;
+}
+
+async function markOrderReady(id) { await FBOrders.updateStatus(id,'confirmed'); toast('Order confirmed ✅'); loadOrders(); }
+async function markDone(id)       { await FBOrders.updateStatus(id,'ready');     toast('Order ready for pickup/delivery ✅'); loadOrders(); }
+
+// ── DONATIONS ─────────────────────────────────────
+async function postDonation() {
+  const name = document.getElementById('dn-name').value.trim();
+  const qty  = parseInt(document.getElementById('dn-qty').value);
+  const exp  = document.getElementById('dn-exp').value.trim();
+  const addr = document.getElementById('dn-addr').value.trim();
+  if (!name||!qty||!exp||!addr) { toast('Fill all required fields','err'); return; }
+  const btn = document.getElementById('donateBtn');
+  btn.innerHTML='<span class="spinner"></span> Posting...'; btn.disabled=true;
+  try {
+    await FBDonations.add({
+      hotelId: HOTEL.uid, hotelName: HOTEL.hotelName||HOTEL.name,
+      name, servings: qty,
+      preparedAt: document.getElementById('dn-prep').value||'Now',
+      expires: exp, city: HOTEL.city||'Mumbai',
+      pickupAddress: addr,
+      notes: document.getElementById('dn-notes').value.trim()
+    });
+    ['dn-name','dn-qty','dn-prep','dn-exp','dn-addr','dn-notes'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    showPanel('mydonations');
+    toast('Donation posted! NGOs have been notified 🤝','ngo');
+  } catch(e) { toast('Failed: '+e.message,'err'); }
+  btn.innerHTML='🤝 Post Donation'; btn.disabled=false;
+}
+
+async function loadMyDonations() {
+  const list = await FBDonations.getAll({ hotelId: HOTEL.uid });
+  const el = document.getElementById('myDonList');
+  if (!list.length) { el.innerHTML=`<div style="text-align:center;padding:50px;color:var(--gray);"><div style="font-size:2.5rem;margin-bottom:12px;">🤝</div><p class="fw6">No donations yet</p><p class="text-sm mt8">Post your first donation and make a difference!</p><button class="btn btn-ngo mt16" onclick="showPanel('donate')">Post Donation →</button></div>`; return; }
+  el.innerHTML = list.map(d=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:#fff;border-radius:14px;border-left:4px solid var(--ngo-green);box-shadow:var(--sh-sm);margin-bottom:10px;">
+      <div style="font-size:2rem;flex-shrink:0;">🥘</div>
+      <div style="flex:1;">
+        <div class="fw7">${d.name}</div>
+        <div class="text-sm text-gray mt4">🍽 ${d.servings} servings · ⏱ Expires ${d.expires} · 📍 ${d.pickupAddress}</div>
+        ${d.status==='claimed'?`<div class="text-xs mt4" style="color:var(--ngo-mid);">✓ Claimed by ${d.claimedByName||'NGO'}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <span class="pill ${d.status==='available'?'pill-ngo':d.status==='claimed'?'pill-claimed':'pill-done'}">${d.status}</span>
+        ${d.status==='available'?`<button class="btn btn-sm btn-red mt8" onclick="removeDon('${d.id}')">Remove</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+async function removeDon(id) {
+  await FBDonations.markCompleted(id);
+  toast('Donation removed','info'); loadMyDonations();
+}
+
+async function loadNGOs() {
+  // Load NGO users from Firestore
+  const el = document.getElementById('ngoList');
+  try {
+    const ngos = await FBNGOs.getByCity(HOTEL.city || 'Mumbai');
+    if (!ngos.length) { el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--gray);">No NGO partners registered in ${HOTEL.city||'your city'} yet.</div>`; return; }
+    el.innerHTML = ngos.map(n=>`
+      <div class="ngo-card">
+        <div class="ngo-av">🏢</div>
+        <div class="ngo-info">
+          <div class="ngo-name">${n.orgName||n.name} ${n.verified?'<span class="pill pill-live" style="font-size:.62rem;">✓ Verified</span>':''}</div>
+          <div class="ngo-meta">
+            <span>📍 ${n.city}</span>
+            <span>🍽 ${n.capacity||30} meals/day</span>
+            <span>🥗 ${n.foodPref||'Any food'}</span>
+          </div>
+        </div>
+        <a href="mailto:${n.email||''}" class="btn btn-ngo btn-sm">Contact →</a>
+      </div>`).join('');
+  } catch(e) { el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--gray);">Error loading NGOs: ${e.message}</div>`; }
+}
+
+// Note: FBOrders.getByHotel is already defined in firebase.js
+</script>
+</body>
+</html>
+

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FOODBRIDGE — Browse Deals</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.pm-fields{margin-top:10px;border:1.5px solid var(--border);border-radius:12px;padding:12px;background:#fff}
+.pm-fields .fgrid{margin-top:8px}
+.pm-note{font-size:.78rem;color:var(--gy);line-height:1.55}
+.profile-modal{max-width:700px}
+.profile-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.profile-user{display:flex;align-items:center;gap:12px;margin:16px 0}
+.profile-av{width:56px;height:56px;border-radius:999px;background:var(--am);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.35rem}
+.profile-name{font-size:1.05rem;font-weight:700;line-height:1.2}
+.profile-email{font-size:.86rem;color:var(--gy)}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}
+.profile-stat{border:1.5px solid var(--border);border-radius:14px;padding:12px;background:#fff}
+.profile-stat-val{font-size:1.4rem;font-weight:700;line-height:1}
+.profile-stat-lbl{font-size:.73rem;color:var(--gy);margin-top:4px;letter-spacing:.4px;text-transform:uppercase}
+.profile-orders{margin-top:8px;max-height:260px;overflow:auto;padding-right:4px}
+.profile-order{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;margin-bottom:8px}
+.profile-order-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.profile-order-id{font-family:monospace;font-size:.78rem;font-weight:700}
+.profile-order-meta{font-size:.76rem;color:var(--gy);margin-top:5px}
+@media (max-width:768px){.profile-stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo" onclick="showPage('browse')" style="cursor:pointer"><b>Leftover</b>Lux</div>
+  <div class="nav-right">
+    <button class="nav-btn on" onclick="showPage('browse')">🍽️ Browse</button>
+    <button class="cart-btn" onclick="toggleCart()" aria-label="Open cart">🛒<span class="cart-dot hidden" id="cartDot">0</span></button>
+    <button class="nav-btn" onclick="openProfileModal()">Profile</button>
+    <div class="nav-chip">
+      <div class="nav-av" id="navAv">U</div>
+      <span class="nav-name" id="navName">Customer</span>
+      <button class="nav-btn" onclick="FBAuth.logOut()" style="padding:4px 10px;font-size:.75rem">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<!-- BROWSE PAGE -->
+<div id="page-browse">
+  <div class="browse-hero">
+    <div class="wrap">
+      <h1>Today's Deals</h1>
+      <p>Fresh surplus from top hotels — grab it before it's gone</p>
+      <div class="search-bar">
+        <input type="text" id="searchQ" placeholder="Search dishes, hotels…" oninput="applyFilters()">
+        <select id="searchCity" onchange="applyFilters()">
+          <option value="">All Cities</option>
+          <option>Mumbai</option><option>Delhi</option><option>Bangalore</option>
+          <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+        </select>
+        <select id="searchSort" onchange="applyFilters()">
+          <option value="">Sort by</option>
+          <option value="disc">Most Discount</option>
+          <option value="price_lo">Price: Low → High</option>
+          <option value="price_hi">Price: High → Low</option>
+          <option value="exp">Expiry Soon</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="wrap section-gap">
+    <div class="filter-bar">
+      <button class="fb on" onclick="setFilter(this,'all')">All</button>
+      <button class="fb" onclick="setFilter(this,'breakfast')">🥐 Breakfast</button>
+      <button class="fb" onclick="setFilter(this,'lunch')">🥗 Lunch</button>
+      <button class="fb" onclick="setFilter(this,'dinner')">🍽️ Dinner</button>
+      <button class="fb" onclick="setFilter(this,'dessert')">🍮 Dessert</button>
+      <button class="fb" onclick="setFilter(this,'buffet')">🍱 Buffet</button>
+      <button class="fb" onclick="setFilter(this,'delivery')">🛵 Delivery Only</button>
+    </div>
+    <div class="loader-row" id="browseLoader"><div class="spinner"></div> Loading deals…</div>
+    <div class="cards-grid" id="cardsGrid"></div>
+    <div class="empty-state hidden" id="emptyBrowse">
+      <div class="empty-state-icon">🔍</div>
+      <p>No deals match your filters. Try changing them!</p>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT PAGE -->
+<div id="page-checkout" class="hidden">
+  <div class="wrap" style="padding-top:28px">
+    <button class="btn btn-outline btn-sm" onclick="showPage('browse')" style="margin-bottom:20px">← Back to Browse</button>
+    <div class="checkout-grid">
+      <div>
+        <div class="form-card">
+          <h3>Delivery Mode</h3>
+          <div class="dm-toggle">
+            <div class="dm-opt on" id="dm-delivery" onclick="setDeliveryMode('delivery')">
+              <span class="dm-icon">🛵</span><div class="dm-title">Home Delivery</div><div class="dm-sub">+₹49 fee</div>
+            </div>
+            <div class="dm-opt" id="dm-pickup" onclick="setDeliveryMode('pickup')">
+              <span class="dm-icon">🏨</span><div class="dm-title">Self Pickup</div><div class="dm-sub">Free</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-card">
+          <h3>Your Details</h3>
+          <div class="fgrid">
+            <div class="fgroup"><label>Full Name *</label><input type="text" id="coName" placeholder="Your name"></div>
+            <div class="fgroup"><label>Phone *</label><input type="tel" id="coPhone" placeholder="10-digit number"></div>
+          </div>
+          <div id="addrFields" style="margin-top:14px">
+            <div class="fgroup fspan"><label>Delivery Address *</label><input type="text" id="coAddr" placeholder="House / flat / building, area"></div>
+            <div class="fgrid" style="margin-top:10px">
+              <div class="fgroup"><label>City</label><input type="text" id="coCity" placeholder="City"></div>
+              <div class="fgroup"><label>Pincode</label><input type="text" id="coPincode" placeholder="400001"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-card">
+          <h3>Payment Method</h3>
+          <div class="pm-list">
+            <label class="pm-opt on" id="pm-upi"><input type="radio" name="pm" value="upi" checked onchange="setPM(this)"><span class="pm-icon">📱</span><div><div class="pm-name">UPI</div><div class="pm-hint">PhonePe, GPay, Paytm</div></div></label>
+            <label class="pm-opt" id="pm-card"><input type="radio" name="pm" value="card" onchange="setPM(this)"><span class="pm-icon">💳</span><div><div class="pm-name">Credit / Debit Card</div><div class="pm-hint">Visa, Mastercard, RuPay</div></div></label>
+            <label class="pm-opt" id="pm-cod"><input type="radio" name="pm" value="cod" onchange="setPM(this)"><span class="pm-icon">💵</span><div><div class="pm-name">Cash on Delivery</div><div class="pm-hint">Pay at door / pickup</div></div></label>
+            <label class="pm-opt" id="pm-nb"><input type="radio" name="pm" value="nb" onchange="setPM(this)"><span class="pm-icon">🏦</span><div><div class="pm-name">Net Banking</div><div class="pm-hint">All major banks</div></div></label>
+          </div>
+          <div class="pm-fields" id="pmFields-upi">
+            <div class="fgroup"><label>UPI ID *</label><input type="text" id="pmUpiId" placeholder="name@bank"></div>
+          </div>
+          <div class="pm-fields hidden" id="pmFields-card">
+            <div class="fgrid">
+              <div class="fgroup fspan"><label>Card Number *</label><input type="text" id="pmCardNo" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456"></div>
+              <div class="fgroup fspan"><label>Name on Card *</label><input type="text" id="pmCardName" placeholder="Cardholder name"></div>
+              <div class="fgroup"><label>Expiry (MM/YY) *</label><input type="text" id="pmCardExp" maxlength="5" placeholder="08/29"></div>
+              <div class="fgroup"><label>CVV *</label><input type="password" id="pmCardCvv" inputmode="numeric" maxlength="4" placeholder="123"></div>
+            </div>
+          </div>
+          <div class="pm-fields hidden" id="pmFields-cod">
+            <p class="pm-note">Cash will be collected at delivery or pickup. Keep exact amount for faster handover.</p>
+          </div>
+          <div class="pm-fields hidden" id="pmFields-nb">
+            <div class="fgrid">
+              <div class="fgroup"><label>Bank *</label>
+                <select id="pmNbBank">
+                  <option value="">Select bank</option>
+                  <option>State Bank of India</option>
+                  <option>HDFC Bank</option>
+                  <option>ICICI Bank</option>
+                  <option>Axis Bank</option>
+                  <option>Kotak Mahindra Bank</option>
+                </select>
+              </div>
+              <div class="fgroup"><label>Account Holder *</label><input type="text" id="pmNbName" placeholder="Account holder name"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ord-summary">
+        <h3>Order Summary</h3>
+        <div id="osSummaryItems"></div>
+        <div style="margin-top:12px">
+          <div class="os-row"><span>Subtotal</span><span id="osSubtotal">₹0</span></div>
+          <div class="os-row"><span>Delivery</span><span id="osDelivery">₹49</span></div>
+          <div class="os-row"><span>Platform discount (2%)</span><span id="osDiscount" style="color:var(--gr)">-₹0</span></div>
+          <div class="os-row os-total"><span>Total</span><span id="osTotal">₹0</span></div>
+        </div>
+        <button class="btn btn-amber btn-full btn-lg" style="margin-top:16px" onclick="placeOrder()" id="placeBtn">Make Payment &amp; Place Order</button>
+        <p style="text-align:center;font-size:.72rem;color:var(--gy);margin-top:10px">🔒 Secure checkout · No hidden charges</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS PAGE -->
+<div id="page-success" class="hidden">
+  <div class="wrap">
+    <div class="success-page">
+      <div class="suc-icon">🎉</div>
+      <h1>Order Placed!</h1>
+      <p>Your delicious meal is confirmed. The hotel has been notified and will prepare your order.</p>
+      <div class="ord-box" id="successBox"></div>
+      <button class="btn btn-amber btn-lg" onclick="showPage('browse');cart=[];renderCart()">Browse More Deals</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER PLACED POPUP -->
+<div class="modal-bg" id="orderPlacedModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="orderPlacedTitle">
+    <button class="modal-close" onclick="closeModal('orderPlacedModal')" aria-label="Close popup">✕</button>
+    <h2 id="orderPlacedTitle">Order Placed Successfully</h2>
+    <p class="modal-sub" id="orderPlacedSub">Your payment is successful and your order is confirmed.</p>
+    <div class="ord-box" id="orderPlacedBox" style="margin-top:10px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn btn-amber" onclick="closeModal('orderPlacedModal');showPage('success')">View Details</button>
+      <button class="btn btn-outline" onclick="closeModal('orderPlacedModal');showPage('browse')">Continue Browsing</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-bg" id="profileModal" aria-hidden="true">
+  <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle" aria-describedby="profileSub">
+    <button class="modal-close" onclick="closeModal('profileModal')" aria-label="Close profile">✕</button>
+    <div class="profile-head">
+      <div>
+        <h2 id="profileTitle">Customer Profile</h2>
+        <p class="modal-sub" id="profileSub">Your account and order details</p>
+      </div>
+    </div>
+    <div class="profile-user">
+      <div class="profile-av" id="profileAv">U</div>
+      <div>
+        <div class="profile-name" id="profileName">Customer</div>
+        <div class="profile-email" id="profileEmail">-</div>
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="profileTotalOrders">0</div>
+        <div class="profile-stat-lbl">Total Orders</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="profileTotalSpend">Rs 0</div>
+        <div class="profile-stat-lbl">Total Spend</div>
+      </div>
+    </div>
+    <h3 style="font-size:1.25rem">Recent Orders</h3>
+    <div class="profile-orders" id="profileRecentOrders">
+      <p class="modal-sub" style="margin-top:8px">No orders yet. Place your first order to see details here.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-ov" id="cartOv" onclick="toggleCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-hd">
+    <h3>🛒 Your Cart</h3>
+    <button class="cart-x" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-bd" id="cartBody">
+    <div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Your cart is empty</p></div>
+  </div>
+  <div class="cart-ft" id="cartFoot" style="display:none">
+    <div class="cft-row"><span>Subtotal</span><span id="cfSubtotal">₹0</span></div>
+    <div class="cft-row"><span>Delivery</span><span id="cfDelivery">₹49</span></div>
+    <div class="cft-row total"><span>Total</span><span id="cfTotal">₹0</span></div>
+    <button class="btn btn-amber btn-full" style="margin-top:12px" onclick="goCheckoutFromCart()">Proceed to Checkout →</button>
+  </div>
+</div>
+
+<div id="toastBox"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script>
+// ── Auth guard ─────────────────────────────────────
+const user = requireRole('customer');
+if (!user) throw new Error('redirect');
+document.getElementById('navAv').textContent   = (user.name||'U')[0].toUpperCase();
+document.getElementById('navName').textContent = user.name || 'Customer';
+
+// ── State ──────────────────────────────────────────
+let cart = [], listings = [], activeFilter = 'all', activeDM = 'delivery', activePM = 'upi';
+let customerOrders = [];
+
+// ── Boot: load listings ───────────────────────────
+(async () => {
+  listings = await FBListings.getAll();
+  document.getElementById('browseLoader').style.display = 'none';
+  renderCards(listings);
+  prefillCheckoutFromProfile();
+  updatePaymentFields();
+  updatePlaceButtonLabel();
+  await loadCustomerProfile();
+})();
+
+// ── Page router ───────────────────────────────────
+function showPage(p) {
+  ['browse','checkout','success'].forEach(x => {
+    document.getElementById('page-'+x).classList.toggle('hidden', x !== p);
+  });
+  if (p === 'checkout') renderCheckout();
+  window.scrollTo(0, 0);
+}
+
+// ── Render food cards ─────────────────────────────
+function foodPhoto(item) {
+  if (item.photoURL) return item.photoURL;
+  const pool = FOOD_PHOTOS[item.cat] || FOOD_PHOTOS.buffet;
+  return pool[(item._seed || 0) % pool.length];
+}
+
+function renderCards(list) {
+  const grid  = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyBrowse');
+  if (!list.length) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  grid.innerHTML = list.map(item => {
+    const photo    = foodPhoto(item);
+    const hotelName = item.hotelName || item.hotel || 'Hotel';
+    return `
+    <article class="food-card">
+      <div class="fc-img-wrap">
+        <img class="fc-photo" src="${photo}" alt="${item.name}" loading="lazy" onerror="this.src='${FOOD_PHOTOS.buffet[0]}'">
+        <div class="fc-grad"></div>
+        <span class="fc-badge fc-disc">-${item.disc}%</span>
+        <span class="fc-badge fc-time">⏱ ${item.expires}</span>
+        <span class="fc-badge fc-tag ${item.delivery?'fc-del-tag':'fc-pku-tag'}">${item.delivery?'🛵 Delivery':'🏨 Pickup'}</span>
+        ${item.qty<=3?`<span class="fc-badge fc-hot">🔥 Only ${item.qty} left!</span>`:''}
+      </div>
+      <div class="fc-body">
+        <div class="fc-hotel">${hotelName}</div>
+        <h3 class="fc-name">${item.name}</h3>
+        <p class="fc-desc">${item.desc||''}</p>
+        <div class="fc-tags">
+          ${item.delivery?'<span class="tag tg">🛵 Delivery</span>':''}
+          ${item.pickup?'<span class="tag ta">🏨 Pickup</span>':''}
+          ${item.rating?`<span class="tag tb">⭐ ${item.rating}</span>`:'<span class="tag tb">⭐ New</span>'}
+        </div>
+        <div class="fc-foot">
+          <div class="fc-price-col">
+            <span class="fc-old">₹${item.orig.toLocaleString('en-IN')}</span>
+            <span class="fc-new">₹${item.newPrice.toLocaleString('en-IN')}</span>
+            <span class="fc-qty">${item.qty} servings left</span>
+          </div>
+          <button class="btn btn-amber btn-sm" onclick="addToCart('${item.id}', this)">+ Cart</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function setFilter(btn, cat) {
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on'); activeFilter = cat; applyFilters();
+}
+
+function applyFilters() {
+  const q    = document.getElementById('searchQ').value.toLowerCase();
+  const city = document.getElementById('searchCity').value;
+  const sort = document.getElementById('searchSort').value;
+  let l = [...listings];
+  if (activeFilter === 'delivery') l = l.filter(x => x.delivery);
+  else if (activeFilter !== 'all') l = l.filter(x => x.cat === activeFilter);
+  if (q)    l = l.filter(x => (x.name+(x.hotelName||x.hotel||'')+x.desc).toLowerCase().includes(q));
+  if (city) l = l.filter(x => x.city === city);
+  if (sort === 'disc')     l.sort((a,b) => b.disc - a.disc);
+  else if (sort === 'price_lo') l.sort((a,b) => a.newPrice - b.newPrice);
+  else if (sort === 'price_hi') l.sort((a,b) => b.newPrice - a.newPrice);
+  else if (sort === 'exp')      l.sort((a,b) => a.expires.localeCompare(b.expires));
+  renderCards(l);
+}
+
+// ── Cart ──────────────────────────────────────────
+function animateAddToCart(sourceEl) {
+  const cartBtn = document.querySelector('.cart-btn');
+  if (!sourceEl || !cartBtn) return;
+  const from = sourceEl.getBoundingClientRect();
+  const to   = cartBtn.getBoundingClientRect();
+  const chip = document.createElement('div');
+  chip.className = 'fly-to-cart';
+  chip.textContent = '+';
+  document.body.appendChild(chip);
+  chip.style.left = `${from.left + from.width / 2}px`;
+  chip.style.top  = `${from.top + from.height / 2}px`;
+  const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+  const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+  chip.animate([
+    { transform:'translate(-50%,-50%) scale(1)', opacity:1, offset:0 },
+    { transform:`translate(${dx * .58 - 50}px,${dy * .58 - 84}px) scale(.92)`, opacity:.92, offset:.55 },
+    { transform:`translate(${dx - 50}px,${dy - 50}px) scale(.28)`, opacity:.12, offset:1 }
+  ], { duration:640, easing:'cubic-bezier(.2,.75,.2,1)' }).finished
+    .catch(() => {})
+    .finally(() => chip.remove());
+}
+
+function bumpCartButton() {
+  const cartBtn = document.querySelector('.cart-btn');
+  if (!cartBtn) return;
+  cartBtn.classList.remove('bump');
+  void cartBtn.offsetWidth;
+  cartBtn.classList.add('bump');
+}
+
+function addToCart(id, btnEl) {
+  const item = listings.find(x => x.id === id); if (!item) return;
+  const ex   = cart.find(x => x.id === id);
+  if (ex) {
+    const maxQty = ex.maxQty || item.qty;
+    if (ex.qty < maxQty) { ex.qty++; } else { toast('Max quantity reached','warn'); return; }
+  } else {
+    cart.push({ ...item, maxQty: item.qty, qty: 1, dm: item.delivery ? 'delivery' : 'pickup' });
+  }
+  toast(`${item.name} added to cart 🛒`);
+  renderCart();
+  animateAddToCart(btnEl);
+  bumpCartButton();
+}
+function removeFromCart(id) { cart = cart.filter(x => x.id !== id); renderCart(); }
+function changeQty(id, d)   {
+  const i = cart.find(x => x.id === id); if (!i) return;
+  if (d > 0 && i.qty >= (i.maxQty || 99)) { toast('Max quantity reached','warn'); return; }
+  i.qty += d;
+  if (i.qty < 1) removeFromCart(id); else renderCart();
+}
+function setItemDM(id, dm)  { const i = cart.find(x => x.id === id); if (i) { i.dm = dm; renderCart(); } }
+
+function cartTotals() {
+  const sub       = cart.reduce((a,i) => a + i.newPrice * i.qty, 0);
+  const hasDel    = cart.some(i => i.dm === 'delivery') && activeDM === 'delivery';
+  const del       = hasDel ? 49 : 0;
+  const disc      = Math.round(sub * 0.02);
+  return { sub, del, disc, total: sub + del - disc };
+}
+
+function renderCart() {
+  const body = document.getElementById('cartBody');
+  const foot = document.getElementById('cartFoot');
+  const dot  = document.getElementById('cartDot');
+  const cnt  = cart.reduce((a,i) => a + i.qty, 0);
+  dot.textContent = cnt; dot.classList.toggle('hidden', cnt === 0);
+  if (!cart.length) {
+    body.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Your cart is empty</p></div>';
+    foot.style.display = 'none'; return;
+  }
+  foot.style.display = 'block';
+  body.innerHTML = cart.map(i => `
+    <div class="ci">
+      <img class="ci-thumb" src="${foodPhoto(i)}" onerror="this.src='${FOOD_PHOTOS.buffet[0]}'">
+      <div class="ci-body">
+        <div class="ci-name">${i.name}</div>
+        <div class="ci-hotel">${i.hotelName||i.hotel||''}</div>
+        <div class="ci-dm">
+          ${i.delivery?`<span class="dm-pill ${i.dm==='delivery'?'sel-del':''}" onclick="setItemDM('${i.id}','delivery')">🛵 Deliver</span>`:''}
+          ${i.pickup?`<span class="dm-pill ${i.dm==='pickup'?'sel-pku':''}" onclick="setItemDM('${i.id}','pickup')">🏨 Pickup</span>`:''}
+        </div>
+        <div class="ci-qrow">
+          <button class="qb" onclick="changeQty('${i.id}',-1)">−</button>
+          <span class="qn">${i.qty}</span>
+          <button class="qb" onclick="changeQty('${i.id}',1)">+</button>
+          <button class="ci-rm" onclick="removeFromCart('${i.id}')">Remove</button>
+        </div>
+      </div>
+      <span class="ci-price">₹${(i.newPrice*i.qty).toLocaleString('en-IN')}</span>
+    </div>`).join('');
+  const t = cartTotals();
+  document.getElementById('cfSubtotal').textContent = '₹' + t.sub.toLocaleString('en-IN');
+  document.getElementById('cfDelivery').textContent = t.del ? '₹49' : 'Free';
+  document.getElementById('cfTotal').textContent    = '₹' + t.total.toLocaleString('en-IN');
+}
+
+function toggleCart() {
+  document.getElementById('cartDrawer').classList.toggle('open');
+  document.getElementById('cartOv').classList.toggle('open');
+}
+
+function goCheckoutFromCart() {
+  if (!cart.length) {
+    toggleCart();
+    toast('Add at least one item to checkout','warn');
+    return;
+  }
+  toggleCart();
+  showPage('checkout');
+}
+
+// ── Checkout ──────────────────────────────────────
+function setDeliveryMode(dm) {
+  activeDM = dm;
+  ['delivery','pickup'].forEach(x => document.getElementById('dm-'+x).classList.toggle('on', x === dm));
+  document.getElementById('addrFields').style.display = dm === 'delivery' ? 'block' : 'none';
+  renderCheckout();
+}
+
+function setPM(el) {
+  activePM = el.value;
+  document.querySelectorAll('.pm-opt').forEach(x => x.classList.remove('on'));
+  el.closest('.pm-opt').classList.add('on');
+  updatePaymentFields();
+}
+
+function updatePaymentFields() {
+  ['upi','card','cod','nb'].forEach(pm => {
+    document.getElementById('pmFields-'+pm).classList.toggle('hidden', pm !== activePM);
+  });
+  updatePlaceButtonLabel();
+}
+
+function updatePlaceButtonLabel() {
+  const btn = document.getElementById('placeBtn');
+  if (!btn) return;
+  btn.textContent = activePM === 'cod' ? 'Place Order' : 'Make Payment & Place Order';
+}
+
+function renderCheckout() {
+  const t = cartTotals();
+  document.getElementById('osSubtotal').textContent = '₹' + t.sub.toLocaleString('en-IN');
+  document.getElementById('osDelivery').textContent = t.del ? '₹49' : 'Free';
+  document.getElementById('osDiscount').textContent = '-₹' + t.disc.toLocaleString('en-IN');
+  document.getElementById('osTotal').textContent    = '₹' + t.total.toLocaleString('en-IN');
+  document.getElementById('osSummaryItems').innerHTML = cart.map(i => `
+    <div class="os-item">
+      <img class="os-thumb" src="${foodPhoto(i)}" onerror="this.src='${FOOD_PHOTOS.buffet[0]}'">
+      <div class="os-name">${i.name}</div>
+      <div class="os-sub">${i.qty}× ₹${i.newPrice.toLocaleString('en-IN')}</div>
+    </div>`).join('');
+}
+
+function validatePhone(value) {
+  const digits = value.replace(/\D/g, '');
+  return digits.length === 10 ? digits : null;
+}
+
+function luhnCheck(cardDigits) {
+  let sum = 0;
+  let shouldDouble = false;
+  for (let i = cardDigits.length - 1; i >= 0; i--) {
+    let digit = Number(cardDigits[i]);
+    if (shouldDouble) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    shouldDouble = !shouldDouble;
+  }
+  return sum % 10 === 0;
+}
+
+function getPaymentDetails() {
+  if (activePM === 'upi') {
+    const upiId = document.getElementById('pmUpiId').value.trim();
+    if (!/^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}$/.test(upiId)) {
+      throw new Error('Enter a valid UPI ID');
+    }
+    return { type:'upi', upiIdMasked: upiId.replace(/^(.{2}).+(@.+)$/, '$1***$2') };
+  }
+  if (activePM === 'card') {
+    const cardNo = document.getElementById('pmCardNo').value.replace(/\s+/g, '');
+    const cardName = document.getElementById('pmCardName').value.trim();
+    const exp = document.getElementById('pmCardExp').value.trim();
+    const cvv = document.getElementById('pmCardCvv').value.trim();
+    if (!/^\d{12,19}$/.test(cardNo) || !luhnCheck(cardNo)) throw new Error('Enter a valid card number');
+    if (!cardName) throw new Error('Enter name on card');
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)) throw new Error('Enter expiry as MM/YY');
+    const [mm, yy] = exp.split('/').map(Number);
+    const now = new Date();
+    const year = 2000 + yy;
+    const expDate = new Date(year, mm, 0, 23, 59, 59);
+    if (expDate < now) throw new Error('Card is expired');
+    if (!/^\d{3,4}$/.test(cvv)) throw new Error('Enter valid CVV');
+    return { type:'card', cardLast4: cardNo.slice(-4), cardName, exp };
+  }
+  if (activePM === 'nb') {
+    const bank = document.getElementById('pmNbBank').value;
+    const accountName = document.getElementById('pmNbName').value.trim();
+    if (!bank) throw new Error('Select a bank for net banking');
+    if (!accountName) throw new Error('Enter account holder name');
+    return { type:'nb', bank, accountName };
+  }
+  return { type:'cod' };
+}
+
+async function placeOrder() {
+  if (!cart.length) { toast('Your cart is empty','warn'); return; }
+  const name  = document.getElementById('coName').value.trim();
+  const phone = validatePhone(document.getElementById('coPhone').value.trim());
+  if (!name || !phone) { toast('Please enter your name and phone number','warn'); return; }
+  if (activeDM === 'delivery' && !document.getElementById('coAddr').value.trim()) {
+    toast('Please enter your delivery address','warn'); return;
+  }
+  let paymentDetails;
+  try {
+    paymentDetails = getPaymentDetails();
+  } catch (e) {
+    toast(e.message || 'Invalid payment details', 'warn');
+    return;
+  }
+  const btn = document.getElementById('placeBtn');
+  btn.disabled = true; btn.textContent = 'Placing order…';
+  try {
+    const t       = cartTotals();
+    const hotelId = cart[0].hotelId || 'unknown';
+    const paymentTx = await FBPayments.create({
+      customerId: user.uid,
+      amount: t.total,
+      method: activePM,
+      details: paymentDetails,
+      orderId: null,
+    });
+    const order   = await FBOrders.place({
+      customerId:    user.uid,
+      customerName:  name,
+      customerPhone: phone,
+      hotelId,
+      hotelName:     cart[0].hotelName || cart[0].hotel || '',
+      items:         cart.map(i => ({ id:i.id, name:i.name, qty:i.qty, price:i.newPrice, dm:i.dm })),
+      total:         t.total,
+      mode:          activeDM,
+      payment:       activePM,
+      paymentId:     paymentTx.id,
+      paymentRef:    paymentTx.paymentRef || '',
+      paymentStatus: paymentTx.status || 'pending',
+      paymentDetails,
+      address:       activeDM === 'delivery' ? document.getElementById('coAddr').value : 'Self pickup at hotel',
+    });
+    const paymentResult = paymentSuccessful(order, paymentTx);
+    await FBPayments.attachOrder(paymentTx.id, order.id);
+    order.paymentStatus = paymentResult.status;
+    if (!order.status) order.status = 'confirmed';
+    customerOrders = [{ ...order, createdAt: Date.now() }, ...customerOrders];
+    cart = []; renderCart();
+    btn.disabled = false; updatePlaceButtonLabel();
+    showSuccess(order, t, paymentResult);
+    showOrderPlacedPopup(order, t, paymentResult);
+    renderProfile();
+  } catch(e) {
+    toast(e.message || 'Order failed. Please try again.','err');
+    btn.disabled = false; updatePlaceButtonLabel();
+  }
+}
+
+function paymentSuccessful(order, paymentTx) {
+  const status = paymentTx?.status || order?.paymentStatus || 'pending';
+  if (status === 'paid') {
+    return { status: 'paid', label: 'Payment Successful' };
+  }
+  if (status === 'failed') {
+    return { status: 'failed', label: 'Payment Failed' };
+  }
+  return { status: 'pending', label: 'Payment Pending (COD)' };
+}
+
+function showSuccess(order, totals, paymentResult) {
+  showPage('success');
+  const pm = { upi:'UPI', card:'Card', cod:'Cash on Delivery', nb:'Net Banking' };
+  const paymentDetailsText = order.paymentDetails?.type === 'card' ? `Card ending ${order.paymentDetails.cardLast4}`
+    : order.paymentDetails?.type === 'upi' ? order.paymentDetails.upiIdMasked
+    : order.paymentDetails?.type === 'nb' ? order.paymentDetails.bank
+    : 'Pay on delivery/pickup';
+  document.getElementById('successBox').innerHTML = `
+    <div class="ob-row"><span>Order ID</span><span style="font-family:monospace;font-weight:700">${order.id}</span></div>
+    <div class="ob-row"><span>Payment Ref</span><span>${order.paymentRef || '--'}</span></div>
+    <div class="ob-row"><span>Total Paid</span><span>₹${totals.total.toLocaleString('en-IN')}</span></div>
+    <div class="ob-row"><span>Mode</span><span>${activeDM==='delivery'?'🛵 Home Delivery':'🏨 Self Pickup'}</span></div>
+    <div class="ob-row"><span>Payment</span><span>${pm[activePM]||activePM}</span></div>
+    <div class="ob-row"><span>Payment Status</span><span>${paymentResult?.label || 'Payment Processing'}</span></div>
+    <div class="ob-row"><span>Paid Via</span><span>${paymentDetailsText}</span></div>
+    <div class="ob-row"><span>ETA</span><span>${activeDM==='delivery'?'30–45 mins':'Ready in 20 mins'}</span></div>
+    <div class="ob-row"><span>Status</span><span style="color:var(--gr);font-weight:700">✅ Confirmed</span></div>`;
+}
+
+function showOrderPlacedPopup(order, totals, paymentResult) {
+  const box = document.getElementById('orderPlacedBox');
+  if (box) {
+    box.innerHTML =
+      '<div class="ob-row"><span>Order ID</span><span style="font-family:monospace;font-weight:700">' + order.id + '</span></div>' +
+      '<div class="ob-row"><span>Amount</span><span>Rs ' + Number(totals.total || 0).toLocaleString('en-IN') + '</span></div>' +
+      '<div class="ob-row"><span>Payment</span><span>' + (paymentResult?.label || 'Processing') + '</span></div>' +
+      '<div class="ob-row"><span>Reference</span><span>' + (order.paymentRef || '--') + '</span></div>';
+  }
+  openModal('orderPlacedModal');
+}
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  el.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  el.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function prefillCheckoutFromProfile() {
+  document.getElementById('coName').value = user.name || '';
+  document.getElementById('coCity').value = user.city || '';
+  document.getElementById('profileAv').textContent = (user.name || 'U')[0].toUpperCase();
+  document.getElementById('profileName').textContent = user.name || 'Customer';
+  document.getElementById('profileEmail').textContent = user.email || '-';
+}
+
+function orderDateText(order) {
+  if (!order?.createdAt) return 'Recently';
+  if (typeof order.createdAt === 'number') return new Date(order.createdAt).toLocaleString('en-IN');
+  if (order.createdAt?.toDate) return order.createdAt.toDate().toLocaleString('en-IN');
+  return 'Recently';
+}
+
+function renderProfile() {
+  const totalSpend = customerOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+  document.getElementById('profileTotalOrders').textContent = String(customerOrders.length);
+  document.getElementById('profileTotalSpend').textContent = 'Rs ' + totalSpend.toLocaleString('en-IN');
+  const recentEl = document.getElementById('profileRecentOrders');
+  if (!customerOrders.length) {
+    recentEl.innerHTML = '<p class="modal-sub" style="margin-top:8px">No orders yet. Place your first order to see details here.</p>';
+    return;
+  }
+  recentEl.innerHTML = customerOrders.slice(0, 8).map(o => `
+    <div class="profile-order">
+      <div class="profile-order-top">
+        <div class="profile-order-id">${o.id}</div>
+        <strong>Rs ${(o.total||0).toLocaleString('en-IN')}</strong>
+      </div>
+      <div class="profile-order-meta">${o.hotelName || 'Hotel'} · ${o.mode === 'delivery' ? 'Delivery' : 'Pickup'} · ${orderDateText(o)}</div>
+      <div class="profile-order-meta">Status: ${(o.status || 'pending').toUpperCase()}</div>
+    </div>
+  `).join('');
+}
+
+async function loadCustomerProfile() {
+  try {
+    customerOrders = await FBOrders.getByCustomer(user.uid);
+  } catch {
+    customerOrders = [];
+  }
+  renderProfile();
+}
+
+function openProfileModal() {
+  renderProfile();
+  openModal('profileModal');
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-bg')) {
+    closeModal(e.target.id);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('profileModal').classList.contains('open')) closeModal('profileModal');
+    if (document.getElementById('cartDrawer').classList.contains('open')) toggleCart();
+  }
+});
+
+function toast(msg, type='ok') {
+  const b = document.getElementById('toastBox'), t = document.createElement('div');
+  const ic = { ok:'✅', err:'❌', info:'ℹ️', warn:'⚠️' };
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${ic[type]||'ℹ️'}</span> ${msg}`;
+  b.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3600);
+}
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
